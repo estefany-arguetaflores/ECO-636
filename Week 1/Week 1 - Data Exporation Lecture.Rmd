@@ -7,7 +7,7 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-setwd("~/Eco636/Week 1")
+setwd("~/Eco-636/Week 1")
 ```
 
 ###### Load packages
@@ -129,13 +129,18 @@ ggplot(data = manders, aes(x = SVL, y = TL, color = Sex)) +
 #### Pair Plots
 A more useful method for creating scatterplots is to do a pair plot, where you plot the relationship between all variables in one quick and simple R line. 
 Useful for:
+
 * All Variables > 1
+
 ** Especially important for multivariate analyses (More than one response)
+
 ** For identifying collinearity issues
+
 ** For exploring relationships between response and explanatory variables. 
 
 Lets try it! 
 
+<mark style="background-color: coral">I was not able to create the pairs plot following the code in the lecture. I intially thought it was because Season, Site and Sex were characters and not factors. Changing those variables to factors did not work. The code if placed in "#" because I was not able to knit the RMarkdown with an error</mark>
 ```{r}
 # Puts histogram on the diagonal
 panel.hist <- function(x, ...)
@@ -161,9 +166,27 @@ panel.cor <- function(x, y, digits = 2, prefix = "", cex.cor, ...)
   tect(0.5, 0.5, txt, cex = cex.cor * r)
 }
 
-pairs(manders[, c(1,2, 5:7)], diag.panel = panel.hist,
-cex.labels = 2, font.labels = 2,
-lower.panel = panel.smooth, upper.panel = panel.cor,
-gap=0, row1attop=TRUE)
+#pairs(manders[,c(1,2, 5:7)], diag.panel = panel.hist,
+    #  cex.labels = 2, font.labels = 2, 
+    # lower.panel = panel.smooth, upper.panel = panel.cor, 
+    #  gap = 0, rowlattop = TRUE)
+
+# Error messaged received is "Error in pairs.default .... non-numeric argument to 'pairs'
+```
+
+CoPlots are a simpler separated version of the colored scatterplot we saw earlier, where we can look at the different variables within defined groups and the interactions between these groups. 
+
+```{r}
+coplot(TL ~ SVL | Sex, data = manders, rows = 1, panel = panel.smooth)
+```
+
+##### Lattice Graphs
+Lattice graphs are similar to coplots but here we can divide the data into even further groups. Here we can see the observations and relationships between SCL and TL for each sex in each season. 
+
+```{r}
+library(lattice)
+
+xyplot(TL ~ SVL | Sex * Season, data = manders, pch = 16,
+       type = c("p", "smooth", col.line = "orange"))
 ```
 
