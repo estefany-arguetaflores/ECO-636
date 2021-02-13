@@ -1,0 +1,152 @@
+---
+title: 'Week 2 Lab: Data Exploration'
+author: "E"
+date: "2/10/2021"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(lattice)
+library(tidyverse)
+setwd("~/Eco636/Week 2")
+```
+
+```{r mem, echo=FALSE, out.width = '45%', fig.align='center'}
+knitr::include_graphics("mem2.PNG")
+```
+
+### Let's get started
+Thsi lab will reinforce some of the concepts presented in *Zuur et al. (2010) "A protocol for data exploration to avoid common statistical problems"*. 
+
+#### Goal of the day: Reproduce figures exactly as they are (STEP 1) and discuss what characteristics of the data are being presented in the figure and what issues it might diagnose (STEP 2)
+
+### Wing Length (Figure 2)
+Lets start with loading the data. This example code was provided in the lab manual. 
+```{r, fig.align='center'}
+Sparrows <- read.table(file = "Data/Sparrows.txt", header = TRUE)
+
+par(mfrow = c(1,2), mar = c(5, 4, 2, 1))
+boxplot(Sparrows$wingcrd, ylab = "Wing Length (mm)")
+dotchart(Sparrows$wingcrd, xlab = "Wing Length (mm)", ylab = "Order of the data")
+```
+
+**What issues are you trying to diagnose?**
+
+We are trying to view the distribution of our data and see an potential outliers. We will notice if our data is a normal distribution if our median is near the center of the plot and the quantiles are roughly equally distributed. 
+
+**What can we learn from this visualization?**
+
+We learned that our data may be skewed toward longer wing lengths. We may have to examine our data further to determine if the observations outside our quantiles are outliers and if they should remain present within our data. 
+
+### Godwit foraging data (figure 4)
+We want to create a multi-panel conditional boxplot for the godwit foraging data. The three boxplots in each panel correspond to three time periods. We are interested in whether the mean values change between sexes and time periods, but need to assume that variation is similar in each group. 
+
+##### E's Attempt
+
+```{r E Fig4, fig.align='center'}
+# First lets load data 
+Godwits <- read.table(file = "Data/Godwits.txt", header = TRUE)
+str(Godwits)
+# So we want Period and sex and mgconsumed
+# Lets first convert Sex and Period to factors so that we can put them into a boxplot. 
+Godwits$SEX <- as.factor(Godwits$SEX)
+Godwits$PERIOD <- as.factor(Godwits$PERIOD)
+# Lets check
+class(Godwits$SEX) # Perfect, its a factor
+levels(Godwits$PERIOD) # Checking what factors we have. 0 = Summer, 1 = Pre-migration and 2 = Winter
+levels(Godwits$SEX) # 1 is female, 2 is male
+
+bwplot(mgconsumed ~ PERIOD | SEX, data = Godwits, Layout = c(1,2))
+```
+
+##### Corrected 
+
+```{r from paper, fig.align='center'}
+Godwits$SEX <- factor(Godwits$SEX, levels = c(0, 1, 2),
+                       labels = c("Not", "Female", "Male")) # They are replacing the numbers with labels. 
+Godwits$PERIOD <- factor(Godwits$PERIOD, levels = c(0, 1, 2),
+                          labels = c("Summer", "Pre-migration", "Winter")) # Replacing numbers with labels
+
+bwplot(mgconsumed ~ PERIOD | SEX, data = Godwits,
+   strip = strip.custom(bg = 'green'),   subset = SEX!=0,
+   cex = .5, layout = c(2, 1),
+   xlab = "Migration period", ylab = "Intake rate")
+# cex is the size of the points
+```
+
+**What issues are you trying to diagnose?** 
+
+We are trying to see the distribution of mg intake by sex and season. We are also trying to see if variation is similar between the sex and between the periods. 
+
+**What can we learn from this visualization?**  We can diagnose potential outliers that seem to be shown in the summer. There are higher outliers shown in the males. 
+
+### Summertime Sparrow weight (Figure 5)
+We need to load the sparrow data again. Good thing we loaded it earlier! 
+
+We are wanting to create a histogram of the weight of 1193 sparrows (only the June, July and August data). Note that the distribution is skewed. 
+
+```{r, fig.align='center'}
+# We know we want only the summer months, June July and August. Right now they are characterized as integers. Lets transform them into factors. 
+
+# Lets see what months we have
+range(Sparrows$Month)
+
+SumSparrows <- Sparrows %>% 
+  filter(Month %in% c("6", "7", "8"))
+range(SumSparrows$Month)
+
+SumSparrows$Month <- factor(SumSparrows$Month, levels = c(6, 7, 8), labels = c("Jun", "Jul", "Aug"))
+levels(SumSparrows$Month)
+
+hist(SumSparrows$wt, 
+     main = NULL, # No title
+     xlab = "Weight (g)",
+     breaks = 20)
+```
+
+Now lets create a histogram for the weight of the sparrows, broken down by month. Note that the center of the distribution is shifting and this is causing the skewed distributed for the aggregated data shown above. 
+
+```{r, fig.align='center'}
+# TO use the lattice package, we called histogram instead of hist
+histogram(~ wt | Month,
+          data = SumSparrows, 
+          layout = c(1,3),
+          breaks = 20,
+          type = c("count"),
+          xlab = "Weight (g)",
+          ylab = "Frequency")
+```
+
+### Water birds in rice fields (Figure 7) 
+
+Create the frequency plot showing the number of observations with a certain number of waterbirds for the rice field data; 718 of 2035 observations equal zero. Plotting data for individual species would result in even higher frequencies of zeros. 
+
+```{r}
+# Lets start with loading the data
+BirdData <- read.table(file = "Data/BirdData.txt", header = TRUE)
+glimpse(BirdData) # Lets just see what we have. 
+# Looking at the example provided with dataset, they multiplied the Area by the AQ Birds. Not sure why but we will do this. 
+
+NewBird <- round(BirdData$AREA * BirdData$AQBIRDS)
+
+hist(NewBird,
+     xlim = c(0, 100),
+     breaks = 10000,
+     xlab = "Observed Values",
+     main = NULL)
+
+## This is the corrected plot from the example. 
+par(mar = c(4, 4, 3, 2))
+plot(table(round(BirdData$AREA * BirdData$AQBIRDS)),
+    type = "h",
+    xlim = c(0, 100),
+    xlab = "Observed values", ylab = "Frequency")
+```
+
+<mark style="background-color: lightblue">I was not able to get the two figures above to match. The main thing was getting the x-axis the same. What can I do to match the figures?</mark>
+
+### Sparrow Morphometric Data (Figure 10)
+

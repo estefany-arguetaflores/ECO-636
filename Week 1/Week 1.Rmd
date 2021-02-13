@@ -1,0 +1,252 @@
+---
+title: "Intro To R"
+author: "E"
+date: "2/9/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Data Frames
+
+You can set the working directory to the folder containing your files. You can do this by `setwd("~/Eco636")` since we are working within a project, we do not need to set the working directory. 
+Now lets load out data
+```{r}
+birds <- read.csv("birds.csv", header = TRUE)
+
+```
+
+We can inspect the data by calling `str()`
+```{r}
+str(birds)
+```
+
+We can also request the first six records of the object by alling either `head()` or `tail()`. Below we show an example of requesting 8 lines by putting the 8 after the comma. 
+
+```{r}
+head(birds, 8)
+```
+
+If you wanted to see the entire data in a spreadsheet format, you can call the function `fix()`
+
+
+The data includeds a column labled 'AMRO' which is the AMerican RObin for each sample plot (row).
+
+```{r}
+birds$AMRO
+```
+
+### R Operators
+The birds data contains 32 sample plots (rows) and 10 fields (columns). The first 3 columns are plot identifiers with the first 2 being character fields (BASIN and SUB) and the third field being numeric (BLOCK). The remaining 7 fields (columns) are numeric and contain abundance for 7 different bird species. 
+
+Lets first try getting the maximum value of the 2nd species
+```{r}
+max(birds[,5])
+# We can actually accomplish this another way
+max(birds$AMRO)
+```
+
+If we wanted to compute the total number of Americann RObins observed in all plots we would do:
+```{r}
+sum(birds[,5])
+# or
+sum(birds$AMRO)
+```
+
+We could also look at finding how many non-zero counts AMRO were across all sites. So that would plots iwth counts greater than 0. 
+```{r}
+sum(birds[,5]>0)
+```
+To understand how we got that number, we should know that R treats TRUE values as 1 and FALSE values as 0.
+```{r}
+greaterthan0 <- birds[,5]>0 
+greaterthan0
+# To find the total we use sum
+sum(greaterthan0)
+```
+Or we can find plots that were exactly 5 black-greaded grosbeak (BHGR)
+```{r}
+sum(birds$BHGR == 5) # Note you need to put two "="
+```
+If we wanted to make it a bit more challenging. Lets find the max number of BHGR in sites where atleast one of the folliwng three species were observed: American Goldfinch (AMGO), American robin (AMRO) or black-capped Chickadee (BCCH). 
+Here we will utilize the *or* operator "|".
+```{r}
+max(birds[,"BHGR"][birds$AMGO >0 | birds$AMRO >0 | birds$BCCH > 0])
+# We get an NA for the answer because the data contains NA. To ignore that we can do this:
+max(birds[,"BHGR"][birds$AMGO >0 | birds$AMRO >0 | birds$BCCH >0], na.rm = T)
+```
+
+### Missing Values
+Missing values in R are defined by NA. 
+
+We can find NA values by either using `is.na()` or `!is.na()`. the "!" means is not. 
+```{r}
+is.na(birds[,4]) # False would be is there is actually a value
+
+!is.na(birds[,4]) # Now false would be is there is no value
+```
+
+### Subseting Matrices or Data Frames
+Lets practice with subseting data. 
+```{r}
+# All rows and colums 4 through 10
+birds.new <- birds[,4:10] #OR
+birds.new <- birds[,-c(1:3)] # Same
+birds.new
+# Plots where SUB is AL and all columns
+birds.new <- birds[1:16,] # OR
+birds.new <- birds[-c(17:32)] # Same
+birds.new
+```
+
+Or we can use the `subset()` function to get the same result:
+```{r}
+# All rows and columns 4 through 10
+birds.new <- subset(birds, select = AMGO:BHGR)
+birds.new
+# Plots wehre SUB is AL and all colums
+birds.new <- subset(birds, subset=SUB == 'AL')
+birds.new
+```
+
+### Row and Column Operations on a Matrix or Data Frame
+Vector operations can be applied to every row or column of a matrix to produce a vector with the `apply()` function. (see `?apply()`). 
+
+You first supply the matrix, the direction and then the function. 
+
+Lets do this to find the maximum count of each species across the 32 plots:
+```{r}
+(bird.max <- apply(birds[,4:10],2,max)) # We use #2 for col-wise apply
+## We see the problems with the NA's again. 
+# Here is how we can fix it
+(bird.max <- apply(birds[4:10], 2, max, na.rm = TRUE)) 
+```
+ Now lets se the maximum count for each plot (remember plots are the rows)
+```{r}
+(bird.sum <- apply(birds[,4:10], 1, sum, na.rm = TRUE)) # We use # 1 for row-wise apply
+```
+We can use the same function `apply()` to find the sum of the number of plots where species counts are greater than 0 
+```{r}
+(bird.sum <-  apply(birds[,4:10] >0, 2, sum, na.rm = TRUE))
+```
+
+We can use the apply function to call other functions
+```{r}
+apply(X = birds[,4:10], MARGIN = 2, FUN = sum)
+# OR
+apply(birds[,4:10],2,sum)
+# The two are the same
+```
+
+### Importing and Exporting Data
+After importing your data in, you can examine it. 
+
+One thing you might want to do is look at the `row.names()` and `colnames()`. 
+```{r}
+# Look at the names
+row.names(birds)
+colnames(birds)
+```
+
+When you import data, any value in a column that is alphabetic is treated as a factor or categorical variable. You would never need to convert it into a numeric variable. However, sometimes you may have a categorical variable coded as an integer. You can do that in R with `as.factor()`. If all the values in a column are numeric, it will treat the variable as numeric. 
+
+Lets convert the BLOCK field from an integer (numeric) to a factor (categorical)
+```{r}
+birds$BLOCK <- as.factor(birds$BLOCK)
+```
+To check that it did what we wanted, lets view the structure of the data 
+```{r}
+str(birds)
+```
+Now we can see that BLOCK is a factor with 16 levels. Alternatively, we can ask for the class of BLOCK
+```{r}
+class(birds$BLOCK)
+```
+
+There are many ways to get data out of R. Here we will work on outputting a data frame using `write.table()`. 
+
+Lets take the birds data set and store it as an object named *birds* as a comma-delinited file:
+```{r, eval=FALSE}
+write.table(birds, 'myNewFile.csv', row.names = FALSE, sep = ',')
+```
+this will save the object birds to a file names *myNewFile.csv* in the current working directory. 
+
+A few things to watch out for using `write.table()` is that it will overwrite a file by the same name if it exists in the output directory. However if you wish to append the object to the existing file, you can add the `append = TRUE` argument to the statement which will append the new file to the bottom of the existing one. To familiarize yourself with this funciton, look at `?write.table`. 
+
+### Plotting in R 
+R can produce a broad range of graphic devices. This includes postscript, pdf, xfig, pgn jepg and more. To learn about what devices R has, try `?Devices`
+
+Lets start with creating a simple data set containing three numberic variables
+```{r}
+x <- sort(runif(25, -2,2))
+y <- rnorm(25, 20 + 4.5*x, 2)
+```
+Now we can produce a simple scatter plot
+```{r}
+plot(x,y) 
+```
+ 
+ We can change the type of plot we want to use:
+```{r}
+par(mfrow = c(2,2))
+plot(x,y, type = 'l')
+plot(x,y, type = 'o')
+plot(x,y, type = 'b')
+plot(x,y, type = 'h')
+```
+
+We can also change the *line type*:
+```{r}
+par(mfrow=c(2,2))
+plot(x,y, type = 'l', lty = 1)
+plot(x,y, type = 'l', lty = 2)
+plot(x,y, type = 'l', lty = 3)
+plot(x,y, type = 'l', lty = 4)
+```
+ Or you can do *line width*
+```{r}
+par(mfrow=c(2,2))
+plot(x,y,type='l', lty=1,lwd=1)
+plot(x,y,type='l', lty=1,lwd=2)
+plot(x,y,type='l', lty=1,lwd=3)
+plot(x,y,type='l', lty=1,lwd=4)
+```
+or you can change the *symbol* we want to use
+```{r}
+par(mfrow=c(2,2))
+plot(x,y,type='p', pch=1)
+plot(x,y,type='p', pch=15)
+plot(x,y,type='p', pch=16)
+plot(x,y,type='p', pch=17)
+```
+Even the size of the symbol
+```{r}
+par(mfrow=c(2,2))
+plot(x,y,type='p', pch=1, cex=0.5)
+plot(x,y,type='p', pch=1, cex=1)
+plot(x,y,type='p', pch=1, cex=1.5)
+plot(x,y,type='p', pch=1, cex=2)
+```
+Now even the color
+```{r}
+par(mfrow=c(2,2))
+plot(x,y,type='l', col=1)
+plot(x,y,type='l', col=2)
+plot(x,y,type='p', pch=16, col=3)
+plot(x,y,type='p', pch=16, col=4)
+```
+
+Most or all of the par commands control the graphics to plot. You need to pass the `par()` function before plotting anything. Useful examples are:
+```{r, eval=FALSE}
+# partition the plotting reagion into 2 rows and 3 columns.
+par(mfrow=c(2,3))
+# used to overlay different plot types
+par(new=TRUE)
+# specifies margin size in inches (bottom, left, top, right) etc.
+par(mai=c(0.6,0.5,0.1,0.5))
+# all of the above in a single command
+par(mfrow=c(2,3), new=TRUE, mai=c(0.6,0.5,0.1,0.5))
+```
+
