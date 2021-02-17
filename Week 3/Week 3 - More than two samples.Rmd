@@ -1,0 +1,35 @@
+---
+title: "Week 3 Lab: More than Two Samples"
+author: "E"
+date: "2/17/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+setwd("~/Eco-636/Week 3")
+```
+
+## ANOVA Background
+General Linear Model with a continuous response variable, **y**, and a singel categorical explanatory variable with **g** groups or levels
+In mathematical form:
+
+$$ y_{i} = \beta_0 + \beta_{1(g)}X_{i(g)} + e_i$$
+Lets say we have three groups: Group 1, Group 2, and Group 3, with Group 1 being the reference group. The model would look like: 
+
+$$ y_i = \beta_0 + \beta_{1(2)}X_{2i} +  \beta_{1(3)}X_{3i} + e_i $$
+
+### Lets put it into practice
+Generating a synthetic data set:
+```{r mydata}
+my_dataset <- data.frame("skull" = rnorm(6, 10, 2), 
+                         "group" = factor(rep(c('A', 'B', 'C'), each = 2)))
+my_dataset
+```
+
+What does the model matrix look like? 
+```{r}
+glm(skull ~ group, data = my_dataset)
+```
+Lets break down that output. 
+  - Intercept: $\beta_0$ - represents the mean of the reference group (Group 1)

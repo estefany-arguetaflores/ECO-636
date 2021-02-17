@@ -11,7 +11,7 @@ editor_options:
 knitr::opts_chunk$set(echo = TRUE)
 library(lattice)
 library(tidyverse)
-setwd("~/Eco636/Week 2")
+setwd("~/Eco-636/Week 2")
 ```
 
 ```{r mem, echo=FALSE, out.width = '45%', fig.align='center'}
@@ -149,4 +149,63 @@ plot(table(round(BirdData$AREA * BirdData$AQBIRDS)),
 <mark style="background-color: lightblue">I was not able to get the two figures above to match. The main thing was getting the x-axis the same. What can I do to match the figures?</mark>
 
 ### Sparrow Morphometric Data (Figure 10)
+We are creating a multi-panel scatterplot of morphometric data for the 1295 saltmarsh sparrows. The upper panels show pairwise scatterplots between each variable and the lower left panels contain Pearson correlation coefficients. The font size of the correlation coefficiant is proportional to its value. Note there are various outliers. 
+
+```{r}
+## put correlations on the panels,
+## with size proportional to the correlations.
+panel.cor <- function(x, y, digits=1, prefix="", cex.cor)
+{
+    usr <- par("usr"); on.exit(par(usr))
+    par(usr = c(0, 1, 0, 1))
+    r1=cor(x,y,use="pairwise.complete.obs")
+    r <- abs(cor(x, y,use="pairwise.complete.obs"))
+
+    txt <- format(c(r1, 0.123456789), digits=digits)[1]
+    txt <- paste(prefix, txt, sep="")
+    if(missing(cex.cor)) cex <- 0.9/strwidth(txt)
+    text(0.5, 0.5, txt, cex = cex * r)
+}
+
+panel.smooth=function (x, y, col = par("col"), bg = NA, pch = par("pch"),
+    cex = 1.5, col.smooth = "tomato", span = 2/3, iter = 3, ...)
+{
+    points(x, y, pch = pch, col = col, bg = bg, cex = cex)
+    ok <- is.finite(x) & is.finite(y)
+    if (any(ok))
+        lines(stats::lowess(x[ok], y[ok], f = span, iter = iter),
+            col = 1, ...)
+}
+
+
+# Pairs Plot
+pairs(Sparrows[,c(1, 3, 4, 5, 6, 7)],
+      lower.panel = panel.smooth, col = "grey", lwd =2)
+```
+
+<mark style="background-color: lightblue">I was not able to get the panel.smooth to make the line red. My only option was to change the colors of the points to allow us to see the line.</mark>
+
+### Wader time-series and auto-correlation (Figure 12)
+
+We are going to need the wader data again. The figures on the left are line plots and the figures on the right are auto-correlation function (ACF) plots. 
+
+Fig.12 (a) Number of Calidris fuscicollis plotted vs. time (1 unit = 2 weeks). (b) Auto-correlation function for the C. fuscicollis time series showing a significant correlation at time lags of 2 and 4 weeks (1 time lag = 2 weeks). (c) Number of Larus dominicanus vs time. (d) Auto-correlation function for L. domincanus showing no significant correlation. Dotted lines in panels (b) and (d) are c. 95% confidence bands. The auto-correlation with the time lag 0 is, by definition equal to 1. 
+
+```{r}
+Wader <- read.table(file = "Data/wader.txt", header = TRUE)
+
+str(Wader)
+
+# We need to make the time variable
+time <- seq(1,25)
+
+par(mfrow = c(2, 2), mar = c(5, 4, 3, 2))
+plot(time, Wader$C.fuscicolis, type = "l", xlab = "Time (2 weeks)",
+     ylab = "C. fuscicollis abundance")
+acf(Wader$C.fuscicolis, main = "C. fuscicollis ACF")
+
+plot(time, Wader$L.dominicanus, type = "l", xlab = "Time (2 weeks)",
+     ylab = "L. dominicanus abundance")
+acf(Wader$L.dominicanus, main = "L. dominicanus ACF")
+```
 

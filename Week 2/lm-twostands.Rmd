@@ -1,0 +1,176 @@
+---
+title: "lm-twostands"
+author: "MGM"
+date: "2/3/2021"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+library(ggplot2)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Simulate the data!
+
+Here I simulate the two tree stands with different DBHs.  First, we simulate the means of the two stands (mu.dbh), and assign stands A or B.  Then we give each observation a unique value using a random number from a normal distribution (rnorm) around the given mean value.
+
+```{r simulate data}
+set.seed(123)
+mu.dbh <- rep(c(70, 100), each=25)           #deterministic part
+Stand <- gl(n=2, k=25, labels = c("A", "B")) #make a two level factor
+DBH <- rnorm(50, mu.dbh, 20)                 #stochastic part N(mean, sigma)
+tree <- data.frame(DBH=DBH, Stand=Stand)
+remove(DBH, mu.dbh, Stand)
+head(tree)
+```
+
+# Modeling process
+Let's do the modeling process!
+
+## 1. State the question
+In words: Is there a *significant* difference in DBH between stands?
+
+  - Response variable: DBH (continuous)
+  
+  - Explanatory variable: Stand (two-level factor)
+
+```{r boxplot}
+ggplot(data = tree, aes(x = Stand, y = DBH, fill=Stand)) +
+  geom_boxplot(show.legend = FALSE) +
+  theme_classic()
+```
+
+## 2. Data exploration
+What are the raw means for reference?
+```{r means}
+tapply(tree$DBH, tree$Stand, mean)   #raw means
+```
+
+
+## 3. Describe the model
+In words: is the difference between stand DBHs significantly different from 0?
+
+H0: the difference between stands is no different from 0.
+
+
+In mathematical form:
+$$y_i = \beta_0 + \beta_1 X_i + e_i$$
+
+  - $y_i$ is DBH
+
+  - $X_i$ is stand
+
+
+What are the model assumptions?
+
+  - Residuals are nomally distributed
+  
+  - Constant variance (homogeneity)
+  
+  - Observations are independent
+  
+  - Predictors are measured without error (fixed X)
+  
+## 4. Fit the model
+Algebraically:
+$$y_i = \beta_0 + \beta_1 X_i + e_i$$
+
+In R:
+```{r model fit}
+m0 <- lm(DBH ~ Stand, data = tree)   #fit the model
+
+# let's check out the coefficient of the model
+coef(m0)
+```
+**Question: What does StandB stand for or represent?**
+
+## 5. Evaluate the output
+First, let's check our assumptions using the plot() function!  We will plot the first three graphs in that function, which are:
+
+Residuals vs. fitted graph:
+
+  - Shows if residuals have a non-linear pattern.  If there is a non-linear pattern it means the relationship between your response and explanatory variables is not represented by your model well.
+  
+Normal Q-Q plot:
+
+  - Shows if residuals are normally distributed. If the residuals follow the middle line, they are normally distributed.
+  
+
+Scale-location plot (a.k.a. Spread-location):
+
+  - Checks for equal variance or homoscedasticity.  If residuals look randomly distributed, no problem, but if they follow a pattern, it is something to worry about.
+
+```{r check assumptions}
+plot(m0, c(1,2,3))
+```
+
+**Question: How do our results look?**
+
+Note: we will save model selection for later when we have more models to test :).
+
+## 6. Interpret the results
+Well, what do we learn from our model?  Use your notes from Tuesday to help interpret these results.
+```{r results}
+summary(m0)
+```
+**Question: What does the estimate of the intercept, 69.33, mean in plain English?**
+
+**Question: What does the estimate of StandB, 32.71, mean in plain English?**
+
+**Question: What do you think the p (Pr(>|t|)) value for each estimate represents?**
+
+**Question: What is the estimated mean of Stand B?**
+
+**Question: For $y_i = \beta_0 + \beta_1 X_i + e_i$, what are our estimates of $\beta_0$, $\beta_1$, and $e_i$?**
+
+### More interpretation
+$R^2$ and $Adjusted R^2$ are often used to estimate how much *variation* in the data is explaned by the model. $R^2$ is used for one explanatory variable, and $Adjusted R^2$ corrects for multiple explanatory variables.
+
+Remember:
+$$R^2 = \frac{SS_{model}}{SS_{total}}$$
+and
+$$Adjusted R^2 = \frac{SS_{explained} / (n-(p+1))}{SS_{total}/(n-1)}$$
+where:
+
+  - $n$ is sample size
+  
+  - $p$ is number of explanatory variables
+
+We can also use $SS$ to ask if the model outperforms "random noise" using the $F$ statistic, where the higher the F, the better the model:
+$$F = \frac{\text{explained variance}} {\text{residual variance}} = \frac{SS_{model}} {SS_{residuals}} $$
+We can use an ANOVA table to ask test the hypothesis:
+
+H0: the model is not significantly different than random noise at predicting y
+```{r ANOVA}
+anova(m0)
+```
+
+
+### Vizualizing the interpretation
+Let's plot the 95% confidence and prediction intervals
+```{r CI PI}
+new.data <- data.frame(Stand=c(rep("A",25), rep("B",25)))
+CI.nd <- predict(m0, newdata = new.data, interval = "confidence")
+colnames(CI.nd) <- c("CI.fit", "CI.lwr", "CI.upr")
+PI.nd <- predict(m0, newdata = new.data, interval = "prediction")
+colnames(PI.nd) <- c("PI.fit", "PI.lwr", "PI.upr")
+
+new.df <- cbind(tree, CI.nd, PI.nd)
+new.df$Index <- as.numeric(row.names(new.df))
+remove(CI.nd, PI.nd, new.data)
+
+ggplot(new.df, aes(x = Index, y = DBH, color = Stand)) +
+  geom_point() +
+  geom_line(aes(y=CI.fit), size=1.2) +
+  geom_line(aes(y=CI.lwr)) +
+  geom_line(aes(y=CI.upr)) +
+  geom_line(aes(y=PI.lwr), linetype = "dashed") +
+  geom_line(aes(y=PI.upr), linetype = "dashed") +
+  theme_classic()
+```
+**Question: What are these confidence/prediction intervals showing you?**
+
+
+*Bonus: try the Knit button at the top of this script... can you knit to a pdf? No worries if you can't yet, but its pretty cool if you can :)*

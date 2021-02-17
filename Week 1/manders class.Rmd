@@ -1,0 +1,47 @@
+---
+title: "Sala"
+author: "E"
+date: "2/16/2021"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+setwd("~/Eco-636/Week 1")
+```
+
+### Reading in Data
+
+```{r }
+manders <- read.table(file = "salamander.txt", header = TRUE)
+```
+
+Running the model
+```{r}
+str(manders)
+
+m1 <- lm(SVL ~ Site, data = manders) 
+m1
+coef(m1)
+```
+
+```{r}
+plot(m1)
+```
+
+```{r}
+summary(m1)
+```
+
+```{r}
+anova(m1)
+```
+
+Two Way ANOVA
+```{r}
+m2 <- lm(SVL ~ Sex + Site, data = manders)
+summary(m2)
+```
+
