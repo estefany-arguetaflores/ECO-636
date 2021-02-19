@@ -1,8 +1,12 @@
 ---
-title: "Week 3 Lab: More than Two Samples"
+title: 'Week 3 Lab: More than Two Samples'
 author: "E"
 date: "2/17/2021"
-output: html_document
+output:
+  html_document: default
+  pdf_document: default
+editor_options:
+  chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
@@ -11,7 +15,7 @@ setwd("~/Eco-636/Week 3")
 ```
 
 ## ANOVA Background
-General Linear Model with a continuous response variable, **y**, and a singel categorical explanatory variable with **g** groups or levels
+General Linear Model with a continuous response variable, *y*, and a singel categorical explanatory variable with *g* groups or levels
 In mathematical form:
 
 $$ y_{i} = \beta_0 + \beta_{1(g)}X_{i(g)} + e_i$$
@@ -32,4 +36,256 @@ What does the model matrix look like?
 glm(skull ~ group, data = my_dataset)
 ```
 Lets break down that output. 
-  - Intercept: $\beta_0$ - represents the mean of the reference group (Group 1)
+
+* Intercept: $\beta_0$ - represents the mean of the reference group (Group 1)
+* $\beta_1$ - This parameter represents the difference in group means compared to the reference group. So, $\beta_{1(1)}$ represents the difference between the mean of Group 1 and the estimated mean of group 2, and $\beta_{1(2)}$ is the difference between the mean of Group 1 and the estimated mean of Group 3. 
+
+
+Now lets design a matirix with *g* columns. 
+```{r model matrix}
+model.matrix(skull ~ group, my_dataset)
+```
+
+<mark style="background-color: tomato">What does this matrix mean?</mark>
+
+### Worked Example - Garlic Mustard
+> Does the height of the plant, measured from base to tip of a dried plant, differ among treatments?
+
+**Linear Model** 
+$$ height_i = \beta_0 + \beta_{1habitat_i} + e_i $$
+Since treat.hab is a 3-level categorical variable, we have two different $\beta_1$s: $\beta_{1(2)habitat_{2i}}$ and $\beta_{1(3)habitat_{3i}}$
+
+The null hypothesis is that there is no difference in the group means, or that $\beta_{1(2)} = \beta_{1(3)} = 0$. There alternative hypothesis is that the differences do *not* equal zero. 
+
+##### Lets Start
+```{r read mustard}
+mustard.full <- read.table(file = "Data/HF.data.2005.txt", header = TRUE)
+head(mustard.full)
+str(mustard.full)
+```
+
+The variables that we are focusing on are treat.hab (categorical treatment habitat variable) and dryheight. 
+
+lets subset the data to just the information we are interested in. 
+```{r subset mustard}
+mustard <- subset(mustard.full, !is.na(dryheight),
+                  c(site, treat.hab, dryheight))
+str(mustard)
+```
+
+We can inspect the categorical variable `treat.hab` using `levels()`. That function allows to to see each levels but also the order which R recognizes them. 
+
+We can also use `table()` to see the frequency of observations in each level. 
+
+```{r must. cont}
+mustard$treat.hab <- as.factor(mustard$treat.hab)
+levels(mustard$treat.hab)
+table(mustard$treat.hab)
+means <-  tapply(mustard$dryheight, mustard$treat.hab, mean)
+means
+sds <- tapply(mustard$dryheight, mustard$treat.hab, sd)
+sds
+```
+
+##### Data exporation
+Lets make the following plots: *scatter plot* of the raw data, *conditional boxplot* using habitat as a conditioning factor, *cleveland dotplot* by treatment factor and *histogram* of dry height.
+
+```{r}
+par(mfrow=c(2,2))
+
+#Scatter plot
+plot(mustard$dryheight, ylim = c(0,2), pch = 21,
+     bg=unique(as.numeric(mustard$treat.hab))+2, cex = 1.5,
+     ylab = "Dry Height (cm)")
+
+# Conditional Boxplot
+plot(dryheight ~ treat.hab, data = mustard, ylim = c(0,2), pch = 21,
+     bg = unique(as.numeric(mustard$treat.hab))+2,
+     col = unique(as.numeric(mustard$treat.hab))+2,
+     ylab = "Dry Height (cm)")
+
+# Cleaveland Dotchart
+dotchart(mustard$dryheight, groups = mustard$treat.hab, 
+         xlab = "Dry Height (cm)")
+
+# Histogram
+hist(mustard$dryheight, breaks = seq(0, 2, 0.05),
+     xlab = "Dry Height (cm)")
+
+```
+
+Things we notice in our data:
+
+* In our conditional boxplot we see that `forests` has a few points outside the 75 quantile. `Int` has 2 points outside. 
+* In the cleaveland boxplot, we see the same outside values as the boxplot... interesting
+* Our histogram shows some skewness. This may be affected by one of out groups. It looks like `sun` in the boxplot may have a greater mean Dry Height compared to the other two groups. 
+
+Notes from the lab:
+* Conditional boxplot suggests that the variances among habitats are not equal. 
+* Our histogram suggests our response variable is not normally distributed. 
+
+However, remember that our model assumptions apply to the residuals
+Lets fit a model and examine the residuals before proceeding...This was we can see if there are any major assumption violations. 
+
+We will used `glm(family = "gaussian")` instead of `lm()`. We are transitioning to using `glm()` as it is mroe flexible in the types of models we can make. Adding`family = "gaussian"` means we are assuming a normal distribution and produces the same thing as `lm()`. 
+
+```{r}
+mod1 <- glm(dryheight ~ treat.hab, data = mustard, family = "gaussian")
+mod1
+par(mfrow = c(1,2))
+plot(mod1)
+
+hist(resid(mod1), breaks = seq(-2,2,0.1), main = "")
+plot(resid(mod1)~mustard$treat.hab, main = "")
+```
+
+The pattern of residuals indicates that our model assumptions are not well met. 
+
+In particular, looking at the QQ plot, the plot indicates a departure from normality. The other plots suggest the variance differs among treatment habitats (non-homogeneity). 
+
+> What can we do to remedy violations of normality and homogeneity of variances? 
+
+We can apply a transformation to our response variable. A log transformation isoften helpful in these situations. 
+
+Lets create a new column to our `mustard` data frame called `logheight` and plot the data again
+```{r log}
+mustard$logheight <- log(mustard$dryheight) # Log transformation
+
+par(mfrow = c(1,2))
+plot(mustard$logheight, ylim = c(-3,2), pch = 21,
+     bg = unique(as.numeric(mustard$treat.hab)) +2, cex = 1.5,
+     ylab = "log(Dry Height (cm))") #Label change
+
+plot(logheight ~ treat.hab, data = mustard, ylim = c(-3,2), pch = 21,
+     bg = unique(as.numeric(mustard$treat.hab))+2, cex = 1, 
+     col = unique(as.numeric(mustard$treat.hab))+2,
+     ylab="log(Dry Height (cm))")
+
+dotchart(mustard$logheight, groups = mustard$treat.hab,
+         xlab = "log(Dry Height (cm))")
+
+hist(mustard$logheight, breaks = seq(-3, 2, 0.25),
+     xlab = "log(dry Height (cm))", main = "") # Label change
+```
+
+Our log data looks more normal! Lets refit our model
+
+```{r}
+log.mod <- glm(logheight ~ treat.hab, data = mustard, family = "gaussian")
+
+par(mfrow = c(2,2))
+
+plot(log.mod)
+par(mfrow = c(1,2))
+hist(resid(log.mod), breaks = seq(-2,2,0.1))
+plot(resid(log.mod) ~ mustard$treat.hab, main = "")
+```
+
+The transformed data look better and now we are more confident in making inferences from our model. We can interpret the model output and make statistical statements about how garlic mustard height varies by habitat type. 
+
+If we are only interested in testing our hypothesis that garlic mustard height varies by habitat type, we could use `summary()` to look at our model's $\beta$s and $p$-values. 
+
+But what if we had other competing hypothesis that we wished to evaluate? 
+We can use a model-selection framework to compare different models representing our different hypotheses. The competing hypothesis may be *plant height does not vary among treatment habitats*. This is an intercept-only model. Lets compare the fit of the models using AIC and the `aictab()` function. 
+
+```{r AIC}
+library(AICcmodavg)
+
+log.mod0 <- glm(logheight ~ 1, mustard, family = "gaussian")
+log.modT <- glm(logheight ~ treat.hab, mustard, family ="gaussian")
+
+models <- list()
+models[[1]] <- log.mod0
+models[[2]] <- log.modT
+names(models) <- c("Null", "Habitat")
+
+aictab(models)
+```
+
+We can see that the habitat model has a lower AIC,  signaling that it is the more parsimonious model. 
+
+<mark style="background-color: tomato">The notes stated that the null-model with just an intercept estimte for plant height receives none of the model support. Where do we see this in the `aictab` output? Is it the AICcWt??</mark>
+
+Lets look at our models $\beta$s (estimates) and $p$-values using `summary()`
+```{r sum of log}
+summary(log.modT)
+```
+
+Note: R has used Forest as the reference level. 
+We can see the differences between the means of the intermediate (INT) and sunny (Sun) habitats from the mean of the forest habitat. 
+
+The p-values test the null hypothesis tha thte difference are equal to zero (no difference between forest and intermediate habitat types and no difference between forest and sunny habitats). 
+
+Based on this output, we see that there are differences between the INT and SUN habitats from the forest habitats. 
+We can see that the intermediate plant height are smaller than the forest due to the negative $\beta$ value. The sunny habitats are larger.The differences are significant. 
+
+Lets pay attention to the summary output for `glm()`. It produces `Null deviance` and `Residual deviance` rather than `R-squared` or `F-statistic`. This is important! *Deviance* is a measure of badness of fit, where higher numbers indicate a worse fit. The `Null deviance` shows how well the response variable is predicted by the null model and the `residual deviance` shows the deviance for the full (or global) model. <mark style="background-color: paleturquoise">If the `Residual deviance` is quite a bit lower than your `Null deviance`, you know the global model is a better one. </mark>
+
+Let's see if there is a significant difference between the intermediate and sunny habitats. We can re-level `treat.hab` to make one of these habitats the reference level. 
+
+```{r relevel}
+mustard$new.hab <- factor(mustard$treat.hab, c("Sun", "Int", "Forest")) # New column of re-leveled treatment habitats
+levels(mustard$new.hab)
+new.mod <- glm(logheight ~ new.hab, mustard, family = "gaussian")
+summary(new.mod)
+```
+
+We can re-level and refit our model but that may not be convenient when we have many groups. Furthermore, if we keep making multiple pair-wise comparisons, the probability of committing a Type 1 error increases. TO reduce this error, we can use the Tukey's Honest Significant Difference (HSD) method. 
+
+Now that we have confirmed any statistical differences in plant height among treatment habitats, lets plot the expected value (mean) plant height and its 95% Confidence Interval (CI) for each habitat. We can calculate these by using `predict()` and setting `interval = "confidence"`. `predict()` requires a creation of a new data frame containing values of our independent variables that will be plugged into the model to make predictions. It is important to have the same column names as the data used to fit the model. 
+
+```{r CI}
+df <- data.frame(treat.hab = factor(c("Forest", "Int", "Sun")))
+CI <- as.data.frame(predict(log.modT, newdata = df, se.fit = TRUE))
+CI$lower <- CI$fit-1.96*CI$se.fit
+CI$upper <- CI$fit+1.96*CI$se.fit
+CI$Habitat <- c("Forest", "Intermediate", "Sunny")
+CI
+
+coef(log.modT) # Group A
+coef(log.modT)[1] + coef(log.modT)[2] # Group B
+coef(log.modT)[1] + coef(log.modT)[3] # Group c
+
+means <- tapply(mustard$logheight, mustard$treat.hab, mean)
+means
+```
+
+We notice that our expected values are all negative. This doesn't make sense given that our dependent variable is dry plant height in centimeters. The negative values are a result of our log transformation which allowed us to meet our model's assumptions. 
+
+For reporting our results, it is important to *back-transform* our parameter estimates and CI's to the scale of our original data. We can do this easily by exponentiating `exp()` our expected values and CI's.
+
+```{r exponenetiating}
+CI[,1:5] <- exp(CI[,1:5])
+CI
+means <- tapply(mustard$dryheight, mustard$treat.hab, mean)
+means
+```
+
+Finally, lets plot our back-transformed expected means and their 95% CI to visualize differences in plant height among habitats on the scale of the original data. Because X is a factor, `plot()` will automatically use a numeric sequence when labeling the x-axis (e.g. 1, 2, 3). In order to make the x-axis display our treatment habitats, we need to remove the x-axis label in `plot()` using the `xaxt = "n"` argument. We can use `axis()` toa dd a new axis with specific labels afterwards. We can also add error bars to the plot showing the 95$ CIs. A simple way to do this is `errbar()` from the package `Hmisc`. Within `errbar()` we need to provide four numeric vectors specifying the x and y values and the upper and lower interval values. 
+
+```{r plot back transformed}
+library(Hmisc)
+par(mfrow = c(1,1))
+
+plot(CI$fit, ylab = 'Dry Height (cm)', ylim = c(0,1),
+     xlab = 'Treatment habitat', xaxt = 'n', cex = 1, pch = 15)
+
+axis(side = 1, at = 1:nrow(CI), labels = CI$Habitat, las = 1, cex.axis = 1.075) # Labeling x axis
+
+errbar(seq(1,3), CI$fit, CI$upper, CI$lower, add = TRUE)
+
+# Try GGPLOT
+m_plot <- ggplot(CI, aes(Habitat, fit,colour=Habitat,
+fill = factor(Habitat))) + geom_bar(stat="identity",
+show.legend=FALSE)
+
+m_plot
+
+m_plot2 <- m_plot + geom_errorbar(data = CI, aes(ymin =lower, ymax =upper), linetype = 1, color ="black",
+                                  alpha = 1, width = 0.5, show.legend = FALSE) +
+xlab("Treatment Habitat") + ylab("Dry Height (cm)") + 
+  geom_hline(yintercept = 0, color = "black", linetype = 3)
+
+m_plot2
+```
+
