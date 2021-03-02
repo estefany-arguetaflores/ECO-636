@@ -45,3 +45,13 @@ m2 <- lm(SVL ~ Sex + Site, data = manders)
 summary(m2)
 ```
 
+```{r tail length}
+manders$tail <- manders$TL - manders$SVL
+
+m2 <- lm(tail ~ SVL, data = manders)
+m2
+coef(m2)
+
+plot(m2)
+```
+

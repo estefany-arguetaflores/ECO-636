@@ -207,12 +207,12 @@ summary {
                          &quot;group&quot; = factor(rep(c(&#39;A&#39;, &#39;B&#39;, &#39;C&#39;), each = 2)))
 my_dataset</code></pre>
 <pre><code>##       skull group
-## 1  8.793924     A
-## 2  9.310431     A
-## 3  7.723192     B
-## 4  9.088065     B
-## 5  9.044746     C
-## 6 10.785213     C</code></pre>
+## 1  6.570721     A
+## 2  9.871619     A
+## 3  7.072000     B
+## 4 11.896306     B
+## 5 12.866182     C
+## 6 14.450478     C</code></pre>
 <p>What does the model matrix look like?</p>
 <pre class="r"><code>glm(skull ~ group, data = my_dataset)</code></pre>
 <pre><code>## 
@@ -220,11 +220,11 @@ my_dataset</code></pre>
 ## 
 ## Coefficients:
 ## (Intercept)       groupB       groupC  
-##      9.0522      -0.6465       0.8628  
+##       8.221        1.263        5.437  
 ## 
 ## Degrees of Freedom: 5 Total (i.e. Null);  3 Residual
-## Null Deviance:       4.873 
-## Residual Deviance: 2.579     AIC: 19.96</code></pre>
+## Null Deviance:       50.73 
+## Residual Deviance: 18.34     AIC: 31.73</code></pre>
 <p>Lets break down that output.</p>
 <ul>
 <li>Intercept: <span class="math inline">\(\beta_0\)</span> - represents the mean of the reference group (Group 1)</li>

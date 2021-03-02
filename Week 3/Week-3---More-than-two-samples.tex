@@ -1,0 +1,918 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{lmodern}
+\usepackage{amsmath}
+\usepackage{ifxetex,ifluatex}
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+  \usepackage{amssymb}
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\hypersetup{
+  pdftitle={Week 3 Lab: More than Two Samples},
+  pdfauthor={E},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+\urlstyle{same} % disable monospaced font for URLs
+\usepackage[margin=1in]{geometry}
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\ifluatex
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+
+\title{Week 3 Lab: More than Two Samples}
+\author{E}
+\date{2/17/2021}
+
+\begin{document}
+\maketitle
+
+\hypertarget{anova-background}{%
+\subsection{ANOVA Background}\label{anova-background}}
+
+General Linear Model with a continuous response variable, \emph{y}, and
+a singel categorical explanatory variable with \emph{g} groups or levels
+In mathematical form:
+
+\[ y_{i} = \beta_0 + \beta_{1(g)}X_{i(g)} + e_i\] Lets say we have three
+groups: Group 1, Group 2, and Group 3, with Group 1 being the reference
+group. The model would look like:
+
+\[ y_i = \beta_0 + \beta_{1(2)}X_{2i} +  \beta_{1(3)}X_{3i} + e_i \]
+
+\hypertarget{lets-put-it-into-practice}{%
+\subsubsection{Lets put it into
+practice}\label{lets-put-it-into-practice}}
+
+Generating a synthetic data set:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{my\_dataset }\OtherTok{\textless{}{-}} \FunctionTok{data.frame}\NormalTok{(}\StringTok{"skull"} \OtherTok{=} \FunctionTok{rnorm}\NormalTok{(}\DecValTok{6}\NormalTok{, }\DecValTok{10}\NormalTok{, }\DecValTok{2}\NormalTok{), }
+                         \StringTok{"group"} \OtherTok{=} \FunctionTok{factor}\NormalTok{(}\FunctionTok{rep}\NormalTok{(}\FunctionTok{c}\NormalTok{(}\StringTok{\textquotesingle{}A\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}B\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}C\textquotesingle{}}\NormalTok{), }\AttributeTok{each =} \DecValTok{2}\NormalTok{)))}
+\NormalTok{my\_dataset}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##       skull group
+## 1  8.379768     A
+## 2  9.889463     A
+## 3 11.560474     B
+## 4  9.453978     B
+## 5  8.331113     C
+## 6  6.275664     C
+\end{verbatim}
+
+What does the model matrix look like?
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{glm}\NormalTok{(skull }\SpecialCharTok{\textasciitilde{}}\NormalTok{ group, }\AttributeTok{data =}\NormalTok{ my\_dataset)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## Call:  glm(formula = skull ~ group, data = my_dataset)
+## 
+## Coefficients:
+## (Intercept)       groupB       groupC  
+##       9.135        1.373       -1.831  
+## 
+## Degrees of Freedom: 5 Total (i.e. Null);  3 Residual
+## Null Deviance:       15.81 
+## Residual Deviance: 5.471     AIC: 24.47
+\end{verbatim}
+
+Lets break down that output.
+
+\begin{itemize}
+\tightlist
+\item
+  Intercept: \(\beta_0\) - represents the mean of the reference group
+  (Group 1)
+\item
+  \(\beta_1\) - This parameter represents the difference in group means
+  compared to the reference group. So, \(\beta_{1(1)}\) represents the
+  difference between the mean of Group 1 and the estimated mean of group
+  2, and \(\beta_{1(2)}\) is the difference between the mean of Group 1
+  and the estimated mean of Group 3.
+\end{itemize}
+
+Now lets design a matirix with \emph{g} columns.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{model.matrix}\NormalTok{(skull }\SpecialCharTok{\textasciitilde{}}\NormalTok{ group, my\_dataset)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##   (Intercept) groupB groupC
+## 1           1      0      0
+## 2           1      0      0
+## 3           1      1      0
+## 4           1      1      0
+## 5           1      0      1
+## 6           1      0      1
+## attr(,"assign")
+## [1] 0 1 1
+## attr(,"contrasts")
+## attr(,"contrasts")$group
+## [1] "contr.treatment"
+\end{verbatim}
+
+What does this matrix mean?
+
+\hypertarget{worked-example---garlic-mustard}{%
+\subsubsection{Worked Example - Garlic
+Mustard}\label{worked-example---garlic-mustard}}
+
+\begin{quote}
+Does the height of the plant, measured from base to tip of a dried
+plant, differ among treatments?
+\end{quote}
+
+\textbf{Linear Model}
+\[ height_i = \beta_0 + \beta_{1habitat_i} + e_i \] Since treat.hab is a
+3-level categorical variable, we have two different \(\beta_1\)s:
+\(\beta_{1(2)habitat_{2i}}\) and \(\beta_{1(3)habitat_{3i}}\)
+
+The null hypothesis is that there is no difference in the group means,
+or that \(\beta_{1(2)} = \beta_{1(3)} = 0\). There alternative
+hypothesis is that the differences do \emph{not} equal zero.
+
+\hypertarget{lets-start}{%
+\subparagraph{Lets Start}\label{lets-start}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{mustard.full }\OtherTok{\textless{}{-}} \FunctionTok{read.table}\NormalTok{(}\AttributeTok{file =} \StringTok{"Data/HF.data.2005.txt"}\NormalTok{, }\AttributeTok{header =} \ConstantTok{TRUE}\NormalTok{)}
+\FunctionTok{head}\NormalTok{(mustard.full)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##   year  id   site block maternal  matall treat.hab basallvs laterallvs totallvs
+## 1 2005  A1 Benson     1     <NA>     Sun    Forest       NA         NA       NA
+## 2 2005 A10 Benson     2     <NA>     Sun    Forest       NA         NA       NA
+## 3 2005 A11 Benson     2     <NA>     Sun    Forest       NA         NA       NA
+## 4 2005 A12 Benson     2     <NA> NOSEEDS    Forest       NA         NA       NA
+## 5 2005 A13 Benson     3     <NA>  Forest    Forest       NA         NA       NA
+## 6 2005 A14 Benson     3     <NA> NOSEEDS    Forest       NA         NA       NA
+##   lfbiomass lateralbr julharv date.harv julfrt date.frt roots shoots siliques
+## 1        NA        NA      NA      <NA>     NA     <NA>    NA     NA       NA
+## 2        NA        NA      NA      <NA>     NA     <NA>    NA     NA       NA
+## 3        NA        NA      NA      <NA>     NA     <NA>    NA     NA       NA
+## 4        NA        NA      NA      <NA>     NA     <NA>    NA     NA       NA
+## 5        NA        NA      NA      <NA>     NA     <NA>    NA     NA       NA
+## 6        NA        NA      NA      <NA>     NA     <NA>    NA     NA       NA
+##   drywtseed wetwtseed numseeds avgseedwt dryheight liveheight rtshtratio lfct04
+## 1        NA        NA       NA        NA        NA         NA         NA     NA
+## 2        NA        NA       NA        NA        NA         NA         NA      3
+## 3        NA        NA       NA        NA        NA         NA         NA     NA
+## 4        NA        NA       NA        NA        NA         NA         NA     NA
+## 5        NA        NA       NA        NA        NA         NA         NA     NA
+## 6        NA        NA       NA        NA        NA         NA         NA     NA
+##   germ04 survcalc surv05
+## 1   0.40        0      0
+## 2   0.30        0      0
+## 3   0.30        0      0
+## 4     NA        0      0
+## 5   0.88        0      0
+## 6     NA        0      0
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{str}\NormalTok{(mustard.full)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 'data.frame':    763 obs. of  30 variables:
+##  $ year      : int  2005 2005 2005 2005 2005 2005 2005 2005 2005 2005 ...
+##  $ id        : chr  "A1" "A10" "A11" "A12" ...
+##  $ site      : chr  "Benson" "Benson" "Benson" "Benson" ...
+##  $ block     : int  1 2 2 2 3 3 3 3 3 1 ...
+##  $ maternal  : chr  NA NA NA NA ...
+##  $ matall    : chr  "Sun" "Sun" "Sun" "NOSEEDS" ...
+##  $ treat.hab : chr  "Forest" "Forest" "Forest" "Forest" ...
+##  $ basallvs  : int  NA NA NA NA NA NA NA NA NA NA ...
+##  $ laterallvs: int  NA NA NA NA NA NA NA NA NA NA ...
+##  $ totallvs  : int  NA NA NA NA NA NA NA NA NA NA ...
+##  $ lfbiomass : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ lateralbr : int  NA NA NA NA NA NA NA NA NA NA ...
+##  $ julharv   : int  NA NA NA NA NA NA NA NA NA NA ...
+##  $ date.harv : chr  NA NA NA NA ...
+##  $ julfrt    : int  NA NA NA NA NA NA NA NA NA NA ...
+##  $ date.frt  : chr  NA NA NA NA ...
+##  $ roots     : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ shoots    : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ siliques  : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ drywtseed : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ wetwtseed : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ numseeds  : int  NA NA NA NA NA NA NA NA NA NA ...
+##  $ avgseedwt : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ dryheight : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ liveheight: num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ rtshtratio: num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ lfct04    : int  NA 3 NA NA NA NA NA NA NA NA ...
+##  $ germ04    : num  0.4 0.3 0.3 NA 0.88 NA 0 0.67 NA 0.17 ...
+##  $ survcalc  : num  0 0 0 0 0 0 0 0 0 0 ...
+##  $ surv05    : int  0 0 0 0 0 0 0 0 0 0 ...
+\end{verbatim}
+
+The variables that we are focusing on are treat.hab (categorical
+treatment habitat variable) and dryheight.
+
+lets subset the data to just the information we are interested in.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{mustard }\OtherTok{\textless{}{-}} \FunctionTok{subset}\NormalTok{(mustard.full, }\SpecialCharTok{!}\FunctionTok{is.na}\NormalTok{(dryheight),}
+                  \FunctionTok{c}\NormalTok{(site, treat.hab, dryheight))}
+\FunctionTok{str}\NormalTok{(mustard)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 'data.frame':    147 obs. of  3 variables:
+##  $ site     : chr  "Benson" "Benson" "Benson" "Benson" ...
+##  $ treat.hab: chr  "Forest" "Forest" "Forest" "Forest" ...
+##  $ dryheight: num  0.478 0.274 0.386 0.412 0.182 0.248 0.122 0.256 0.402 0.456 ...
+\end{verbatim}
+
+We can inspect the categorical variable \texttt{treat.hab} using
+\texttt{levels()}. That function allows to to see each levels but also
+the order which R recognizes them.
+
+We can also use \texttt{table()} to see the frequency of observations in
+each level.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{mustard}\SpecialCharTok{$}\NormalTok{treat.hab }\OtherTok{\textless{}{-}} \FunctionTok{as.factor}\NormalTok{(mustard}\SpecialCharTok{$}\NormalTok{treat.hab)}
+\FunctionTok{levels}\NormalTok{(mustard}\SpecialCharTok{$}\NormalTok{treat.hab)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] "Forest" "Int"    "Sun"
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{table}\NormalTok{(mustard}\SpecialCharTok{$}\NormalTok{treat.hab)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## Forest    Int    Sun 
+##     84     19     44
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{means }\OtherTok{\textless{}{-}}  \FunctionTok{tapply}\NormalTok{(mustard}\SpecialCharTok{$}\NormalTok{dryheight, mustard}\SpecialCharTok{$}\NormalTok{treat.hab, mean)}
+\NormalTok{means}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##    Forest       Int       Sun 
+## 0.4939881 0.3171579 0.7723182
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{sds }\OtherTok{\textless{}{-}} \FunctionTok{tapply}\NormalTok{(mustard}\SpecialCharTok{$}\NormalTok{dryheight, mustard}\SpecialCharTok{$}\NormalTok{treat.hab, sd)}
+\NormalTok{sds}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##    Forest       Int       Sun 
+## 0.3071212 0.1735403 0.3054763
+\end{verbatim}
+
+\hypertarget{data-exporation}{%
+\subparagraph{Data exporation}\label{data-exporation}}
+
+Lets make the following plots: \emph{scatter plot} of the raw data,
+\emph{conditional boxplot} using habitat as a conditioning factor,
+\emph{cleveland dotplot} by treatment factor and \emph{histogram} of dry
+height.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{par}\NormalTok{(}\AttributeTok{mfrow=}\FunctionTok{c}\NormalTok{(}\DecValTok{2}\NormalTok{,}\DecValTok{2}\NormalTok{))}
+
+\CommentTok{\#Scatter plot}
+\FunctionTok{plot}\NormalTok{(mustard}\SpecialCharTok{$}\NormalTok{dryheight, }\AttributeTok{ylim =} \FunctionTok{c}\NormalTok{(}\DecValTok{0}\NormalTok{,}\DecValTok{2}\NormalTok{), }\AttributeTok{pch =} \DecValTok{21}\NormalTok{,}
+     \AttributeTok{bg=}\FunctionTok{unique}\NormalTok{(}\FunctionTok{as.numeric}\NormalTok{(mustard}\SpecialCharTok{$}\NormalTok{treat.hab))}\SpecialCharTok{+}\DecValTok{2}\NormalTok{, }\AttributeTok{cex =} \FloatTok{1.5}\NormalTok{,}
+     \AttributeTok{ylab =} \StringTok{"Dry Height (cm)"}\NormalTok{)}
+
+\CommentTok{\# Conditional Boxplot}
+\FunctionTok{plot}\NormalTok{(dryheight }\SpecialCharTok{\textasciitilde{}}\NormalTok{ treat.hab, }\AttributeTok{data =}\NormalTok{ mustard, }\AttributeTok{ylim =} \FunctionTok{c}\NormalTok{(}\DecValTok{0}\NormalTok{,}\DecValTok{2}\NormalTok{), }\AttributeTok{pch =} \DecValTok{21}\NormalTok{,}
+     \AttributeTok{bg =} \FunctionTok{unique}\NormalTok{(}\FunctionTok{as.numeric}\NormalTok{(mustard}\SpecialCharTok{$}\NormalTok{treat.hab))}\SpecialCharTok{+}\DecValTok{2}\NormalTok{,}
+     \AttributeTok{col =} \FunctionTok{unique}\NormalTok{(}\FunctionTok{as.numeric}\NormalTok{(mustard}\SpecialCharTok{$}\NormalTok{treat.hab))}\SpecialCharTok{+}\DecValTok{2}\NormalTok{,}
+     \AttributeTok{ylab =} \StringTok{"Dry Height (cm)"}\NormalTok{)}
+
+\CommentTok{\# Cleaveland Dotchart}
+\FunctionTok{dotchart}\NormalTok{(mustard}\SpecialCharTok{$}\NormalTok{dryheight, }\AttributeTok{groups =}\NormalTok{ mustard}\SpecialCharTok{$}\NormalTok{treat.hab, }
+         \AttributeTok{xlab =} \StringTok{"Dry Height (cm)"}\NormalTok{)}
+
+\CommentTok{\# Histogram}
+\FunctionTok{hist}\NormalTok{(mustard}\SpecialCharTok{$}\NormalTok{dryheight, }\AttributeTok{breaks =} \FunctionTok{seq}\NormalTok{(}\DecValTok{0}\NormalTok{, }\DecValTok{2}\NormalTok{, }\FloatTok{0.05}\NormalTok{),}
+     \AttributeTok{xlab =} \StringTok{"Dry Height (cm)"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Week-3---More-than-two-samples_files/figure-latex/unnamed-chunk-2-1.pdf}
+
+Things we notice in our data:
+
+\begin{itemize}
+\tightlist
+\item
+  In our conditional boxplot we see that \texttt{forests} has a few
+  points outside the 75 quantile. \texttt{Int} has 2 points outside.
+\item
+  In the cleaveland boxplot, we see the same outside values as the
+  boxplot\ldots{} interesting
+\item
+  Our histogram shows some skewness. This may be affected by one of out
+  groups. It looks like \texttt{sun} in the boxplot may have a greater
+  mean Dry Height compared to the other two groups.
+\end{itemize}
+
+Notes from the lab: * Conditional boxplot suggests that the variances
+among habitats are not equal. * Our histogram suggests our response
+variable is not normally distributed.
+
+However, remember that our model assumptions apply to the residuals Lets
+fit a model and examine the residuals before proceeding\ldots This was
+we can see if there are any major assumption violations.
+
+We will used \texttt{glm(family\ =\ "gaussian")} instead of
+\texttt{lm()}. We are transitioning to using \texttt{glm()} as it is
+mroe flexible in the types of models we can make.
+Adding\texttt{family\ =\ "gaussian"} means we are assuming a normal
+distribution and produces the same thing as \texttt{lm()}.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{mod1 }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(dryheight }\SpecialCharTok{\textasciitilde{}}\NormalTok{ treat.hab, }\AttributeTok{data =}\NormalTok{ mustard, }\AttributeTok{family =} \StringTok{"gaussian"}\NormalTok{)}
+\NormalTok{mod1}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## Call:  glm(formula = dryheight ~ treat.hab, family = "gaussian", data = mustard)
+## 
+## Coefficients:
+##  (Intercept)  treat.habInt  treat.habSun  
+##       0.4940       -0.1768        0.2783  
+## 
+## Degrees of Freedom: 146 Total (i.e. Null);  144 Residual
+## Null Deviance:       15.85 
+## Residual Deviance: 12.38     AIC: 61.48
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{par}\NormalTok{(}\AttributeTok{mfrow =} \FunctionTok{c}\NormalTok{(}\DecValTok{1}\NormalTok{,}\DecValTok{2}\NormalTok{))}
+\FunctionTok{plot}\NormalTok{(mod1)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Week-3---More-than-two-samples_files/figure-latex/unnamed-chunk-3-1.pdf}
+\includegraphics{Week-3---More-than-two-samples_files/figure-latex/unnamed-chunk-3-2.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{hist}\NormalTok{(}\FunctionTok{resid}\NormalTok{(mod1), }\AttributeTok{breaks =} \FunctionTok{seq}\NormalTok{(}\SpecialCharTok{{-}}\DecValTok{2}\NormalTok{,}\DecValTok{2}\NormalTok{,}\FloatTok{0.1}\NormalTok{), }\AttributeTok{main =} \StringTok{""}\NormalTok{)}
+\FunctionTok{plot}\NormalTok{(}\FunctionTok{resid}\NormalTok{(mod1)}\SpecialCharTok{\textasciitilde{}}\NormalTok{mustard}\SpecialCharTok{$}\NormalTok{treat.hab, }\AttributeTok{main =} \StringTok{""}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Week-3---More-than-two-samples_files/figure-latex/unnamed-chunk-3-3.pdf}
+
+The pattern of residuals indicates that our model assumptions are not
+well met.
+
+In particular, looking at the QQ plot, the plot indicates a departure
+from normality. The other plots suggest the variance differs among
+treatment habitats (non-homogeneity).
+
+\begin{quote}
+What can we do to remedy violations of normality and homogeneity of
+variances?
+\end{quote}
+
+We can apply a transformation to our response variable. A log
+transformation isoften helpful in these situations.
+
+Lets create a new column to our \texttt{mustard} data frame called
+\texttt{logheight} and plot the data again
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{mustard}\SpecialCharTok{$}\NormalTok{logheight }\OtherTok{\textless{}{-}} \FunctionTok{log}\NormalTok{(mustard}\SpecialCharTok{$}\NormalTok{dryheight) }\CommentTok{\# Log transformation}
+
+\FunctionTok{par}\NormalTok{(}\AttributeTok{mfrow =} \FunctionTok{c}\NormalTok{(}\DecValTok{1}\NormalTok{,}\DecValTok{2}\NormalTok{))}
+\FunctionTok{plot}\NormalTok{(mustard}\SpecialCharTok{$}\NormalTok{logheight, }\AttributeTok{ylim =} \FunctionTok{c}\NormalTok{(}\SpecialCharTok{{-}}\DecValTok{3}\NormalTok{,}\DecValTok{2}\NormalTok{), }\AttributeTok{pch =} \DecValTok{21}\NormalTok{,}
+     \AttributeTok{bg =} \FunctionTok{unique}\NormalTok{(}\FunctionTok{as.numeric}\NormalTok{(mustard}\SpecialCharTok{$}\NormalTok{treat.hab)) }\SpecialCharTok{+}\DecValTok{2}\NormalTok{, }\AttributeTok{cex =} \FloatTok{1.5}\NormalTok{,}
+     \AttributeTok{ylab =} \StringTok{"log(Dry Height (cm))"}\NormalTok{) }\CommentTok{\#Label change}
+
+\FunctionTok{plot}\NormalTok{(logheight }\SpecialCharTok{\textasciitilde{}}\NormalTok{ treat.hab, }\AttributeTok{data =}\NormalTok{ mustard, }\AttributeTok{ylim =} \FunctionTok{c}\NormalTok{(}\SpecialCharTok{{-}}\DecValTok{3}\NormalTok{,}\DecValTok{2}\NormalTok{), }\AttributeTok{pch =} \DecValTok{21}\NormalTok{,}
+     \AttributeTok{bg =} \FunctionTok{unique}\NormalTok{(}\FunctionTok{as.numeric}\NormalTok{(mustard}\SpecialCharTok{$}\NormalTok{treat.hab))}\SpecialCharTok{+}\DecValTok{2}\NormalTok{, }\AttributeTok{cex =} \DecValTok{1}\NormalTok{, }
+     \AttributeTok{col =} \FunctionTok{unique}\NormalTok{(}\FunctionTok{as.numeric}\NormalTok{(mustard}\SpecialCharTok{$}\NormalTok{treat.hab))}\SpecialCharTok{+}\DecValTok{2}\NormalTok{,}
+     \AttributeTok{ylab=}\StringTok{"log(Dry Height (cm))"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Week-3---More-than-two-samples_files/figure-latex/log-1.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{dotchart}\NormalTok{(mustard}\SpecialCharTok{$}\NormalTok{logheight, }\AttributeTok{groups =}\NormalTok{ mustard}\SpecialCharTok{$}\NormalTok{treat.hab,}
+         \AttributeTok{xlab =} \StringTok{"log(Dry Height (cm))"}\NormalTok{)}
+
+\FunctionTok{hist}\NormalTok{(mustard}\SpecialCharTok{$}\NormalTok{logheight, }\AttributeTok{breaks =} \FunctionTok{seq}\NormalTok{(}\SpecialCharTok{{-}}\DecValTok{3}\NormalTok{, }\DecValTok{2}\NormalTok{, }\FloatTok{0.25}\NormalTok{),}
+     \AttributeTok{xlab =} \StringTok{"log(dry Height (cm))"}\NormalTok{, }\AttributeTok{main =} \StringTok{""}\NormalTok{) }\CommentTok{\# Label change}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Week-3---More-than-two-samples_files/figure-latex/log-2.pdf}
+
+Our log data looks more normal! Lets refit our model
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{log.mod }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(logheight }\SpecialCharTok{\textasciitilde{}}\NormalTok{ treat.hab, }\AttributeTok{data =}\NormalTok{ mustard, }\AttributeTok{family =} \StringTok{"gaussian"}\NormalTok{)}
+
+\FunctionTok{par}\NormalTok{(}\AttributeTok{mfrow =} \FunctionTok{c}\NormalTok{(}\DecValTok{2}\NormalTok{,}\DecValTok{2}\NormalTok{))}
+
+\FunctionTok{plot}\NormalTok{(log.mod)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Week-3---More-than-two-samples_files/figure-latex/unnamed-chunk-4-1.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{par}\NormalTok{(}\AttributeTok{mfrow =} \FunctionTok{c}\NormalTok{(}\DecValTok{1}\NormalTok{,}\DecValTok{2}\NormalTok{))}
+\FunctionTok{hist}\NormalTok{(}\FunctionTok{resid}\NormalTok{(log.mod), }\AttributeTok{breaks =} \FunctionTok{seq}\NormalTok{(}\SpecialCharTok{{-}}\DecValTok{2}\NormalTok{,}\DecValTok{2}\NormalTok{,}\FloatTok{0.1}\NormalTok{))}
+\FunctionTok{plot}\NormalTok{(}\FunctionTok{resid}\NormalTok{(log.mod) }\SpecialCharTok{\textasciitilde{}}\NormalTok{ mustard}\SpecialCharTok{$}\NormalTok{treat.hab, }\AttributeTok{main =} \StringTok{""}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Week-3---More-than-two-samples_files/figure-latex/unnamed-chunk-4-2.pdf}
+
+The transformed data look better and now we are more confident in making
+inferences from our model. We can interpret the model output and make
+statistical statements about how garlic mustard height varies by habitat
+type.
+
+If we are only interested in testing our hypothesis that garlic mustard
+height varies by habitat type, we could use \texttt{summary()} to look
+at our model's \(\beta\)s and \(p\)-values.
+
+But what if we had other competing hypothesis that we wished to
+evaluate? We can use a model-selection framework to compare different
+models representing our different hypotheses. The competing hypothesis
+may be \emph{plant height does not vary among treatment habitats}. This
+is an intercept-only model. Lets compare the fit of the models using AIC
+and the \texttt{aictab()} function.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{library}\NormalTok{(AICcmodavg)}
+
+\NormalTok{log.mod0 }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(logheight }\SpecialCharTok{\textasciitilde{}} \DecValTok{1}\NormalTok{, mustard, }\AttributeTok{family =} \StringTok{"gaussian"}\NormalTok{)}
+\NormalTok{log.modT }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(logheight }\SpecialCharTok{\textasciitilde{}}\NormalTok{ treat.hab, mustard, }\AttributeTok{family =}\StringTok{"gaussian"}\NormalTok{)}
+
+\NormalTok{models }\OtherTok{\textless{}{-}} \FunctionTok{list}\NormalTok{()}
+\NormalTok{models[[}\DecValTok{1}\NormalTok{]] }\OtherTok{\textless{}{-}}\NormalTok{ log.mod0}
+\NormalTok{models[[}\DecValTok{2}\NormalTok{]] }\OtherTok{\textless{}{-}}\NormalTok{ log.modT}
+\FunctionTok{names}\NormalTok{(models) }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\StringTok{"Null"}\NormalTok{, }\StringTok{"Habitat"}\NormalTok{)}
+
+\FunctionTok{aictab}\NormalTok{(models)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## Model selection based on AICc:
+## 
+##         K   AICc Delta_AICc AICcWt Cum.Wt      LL
+## Habitat 4 235.01       0.00      1      1 -113.36
+## Null    2 274.03      39.02      0      1 -134.97
+\end{verbatim}
+
+We can see that the habitat model has a lower AIC, signaling that it is
+the more parsimonious model.
+
+The notes stated that the null-model with just an intercept estimte for
+plant height receives none of the model support. Where do we see this in
+the \texttt{aictab} output? Is it the AICcWt??
+
+Lets look at our models \(\beta\)s (estimates) and \(p\)-values using
+\texttt{summary()}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{summary}\NormalTok{(log.modT)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## Call:
+## glm(formula = logheight ~ treat.hab, family = "gaussian", data = mustard)
+## 
+## Deviance Residuals: 
+##      Min        1Q    Median        3Q       Max  
+## -1.23497  -0.37953  -0.00351   0.35166   1.20381  
+## 
+## Coefficients:
+##              Estimate Std. Error t value Pr(>|t|)    
+## (Intercept)  -0.86877    0.05768 -15.062  < 2e-16 ***
+## treat.habInt -0.41463    0.13430  -3.087  0.00242 ** 
+## treat.habSun  0.52329    0.09838   5.319  3.9e-07 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## (Dispersion parameter for gaussian family taken to be 0.2794574)
+## 
+##     Null deviance: 53.996  on 146  degrees of freedom
+## Residual deviance: 40.242  on 144  degrees of freedom
+## AIC: 234.73
+## 
+## Number of Fisher Scoring iterations: 2
+\end{verbatim}
+
+Note: R has used Forest as the reference level. We can see the
+differences between the means of the intermediate (INT) and sunny (Sun)
+habitats from the mean of the forest habitat.
+
+The p-values test the null hypothesis tha thte difference are equal to
+zero (no difference between forest and intermediate habitat types and no
+difference between forest and sunny habitats).
+
+Based on this output, we see that there are differences between the INT
+and SUN habitats from the forest habitats. We can see that the
+intermediate plant height are smaller than the forest due to the
+negative \(\beta\) value. The sunny habitats are larger.The differences
+are significant.
+
+Lets pay attention to the summary output for \texttt{glm()}. It produces
+\texttt{Null\ deviance} and \texttt{Residual\ deviance} rather than
+\texttt{R-squared} or \texttt{F-statistic}. This is important!
+\emph{Deviance} is a measure of badness of fit, where higher numbers
+indicate a worse fit. The \texttt{Null\ deviance} shows how well the
+response variable is predicted by the null model and the
+\texttt{residual\ deviance} shows the deviance for the full (or global)
+model. If the \texttt{Residual\ deviance} is quite a bit lower than your
+\texttt{Null\ deviance}, you know the global model is a better one.
+
+Let's see if there is a significant difference between the intermediate
+and sunny habitats. We can re-level \texttt{treat.hab} to make one of
+these habitats the reference level.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{mustard}\SpecialCharTok{$}\NormalTok{new.hab }\OtherTok{\textless{}{-}} \FunctionTok{factor}\NormalTok{(mustard}\SpecialCharTok{$}\NormalTok{treat.hab, }\FunctionTok{c}\NormalTok{(}\StringTok{"Sun"}\NormalTok{, }\StringTok{"Int"}\NormalTok{, }\StringTok{"Forest"}\NormalTok{)) }\CommentTok{\# New column of re{-}leveled treatment habitats}
+\FunctionTok{levels}\NormalTok{(mustard}\SpecialCharTok{$}\NormalTok{new.hab)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] "Sun"    "Int"    "Forest"
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{new.mod }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(logheight }\SpecialCharTok{\textasciitilde{}}\NormalTok{ new.hab, mustard, }\AttributeTok{family =} \StringTok{"gaussian"}\NormalTok{)}
+\FunctionTok{summary}\NormalTok{(new.mod)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## Call:
+## glm(formula = logheight ~ new.hab, family = "gaussian", data = mustard)
+## 
+## Deviance Residuals: 
+##      Min        1Q    Median        3Q       Max  
+## -1.23497  -0.37953  -0.00351   0.35166   1.20381  
+## 
+## Coefficients:
+##               Estimate Std. Error t value Pr(>|t|)    
+## (Intercept)   -0.34547    0.07970  -4.335 2.72e-05 ***
+## new.habInt    -0.93792    0.14512  -6.463 1.49e-09 ***
+## new.habForest -0.52329    0.09838  -5.319 3.90e-07 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## (Dispersion parameter for gaussian family taken to be 0.2794574)
+## 
+##     Null deviance: 53.996  on 146  degrees of freedom
+## Residual deviance: 40.242  on 144  degrees of freedom
+## AIC: 234.73
+## 
+## Number of Fisher Scoring iterations: 2
+\end{verbatim}
+
+We can re-level and refit our model but that may not be convenient when
+we have many groups. Furthermore, if we keep making multiple pair-wise
+comparisons, the probability of committing a Type 1 error increases. TO
+reduce this error, we can use the Tukey's Honest Significant Difference
+(HSD) method.
+
+Now that we have confirmed any statistical differences in plant height
+among treatment habitats, lets plot the expected value (mean) plant
+height and its 95\% Confidence Interval (CI) for each habitat. We can
+calculate these by using \texttt{predict()} and setting
+\texttt{interval\ =\ "confidence"}. \texttt{predict()} requires a
+creation of a new data frame containing values of our independent
+variables that will be plugged into the model to make predictions. It is
+important to have the same column names as the data used to fit the
+model.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{df }\OtherTok{\textless{}{-}} \FunctionTok{data.frame}\NormalTok{(}\AttributeTok{treat.hab =} \FunctionTok{factor}\NormalTok{(}\FunctionTok{c}\NormalTok{(}\StringTok{"Forest"}\NormalTok{, }\StringTok{"Int"}\NormalTok{, }\StringTok{"Sun"}\NormalTok{)))}
+\NormalTok{CI }\OtherTok{\textless{}{-}} \FunctionTok{as.data.frame}\NormalTok{(}\FunctionTok{predict}\NormalTok{(log.modT, }\AttributeTok{newdata =}\NormalTok{ df, }\AttributeTok{se.fit =} \ConstantTok{TRUE}\NormalTok{))}
+\NormalTok{CI}\SpecialCharTok{$}\NormalTok{lower }\OtherTok{\textless{}{-}}\NormalTok{ CI}\SpecialCharTok{$}\NormalTok{fit}\FloatTok{{-}1.96}\SpecialCharTok{*}\NormalTok{CI}\SpecialCharTok{$}\NormalTok{se.fit}
+\NormalTok{CI}\SpecialCharTok{$}\NormalTok{upper }\OtherTok{\textless{}{-}}\NormalTok{ CI}\SpecialCharTok{$}\NormalTok{fit}\FloatTok{+1.96}\SpecialCharTok{*}\NormalTok{CI}\SpecialCharTok{$}\NormalTok{se.fit}
+\NormalTok{CI}\SpecialCharTok{$}\NormalTok{Habitat }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\StringTok{"Forest"}\NormalTok{, }\StringTok{"Intermediate"}\NormalTok{, }\StringTok{"Sunny"}\NormalTok{)}
+\NormalTok{CI}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##          fit     se.fit residual.scale      lower      upper      Habitat
+## 1 -0.8687665 0.05767906      0.5286373 -0.9818174 -0.7557155       Forest
+## 2 -1.2833924 0.12127771      0.5286373 -1.5210967 -1.0456881 Intermediate
+## 3 -0.3454749 0.07969507      0.5286373 -0.5016773 -0.1892726        Sunny
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{coef}\NormalTok{(log.modT) }\CommentTok{\# Group A}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##  (Intercept) treat.habInt treat.habSun 
+##   -0.8687665   -0.4146259    0.5232915
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{coef}\NormalTok{(log.modT)[}\DecValTok{1}\NormalTok{] }\SpecialCharTok{+} \FunctionTok{coef}\NormalTok{(log.modT)[}\DecValTok{2}\NormalTok{] }\CommentTok{\# Group B}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## (Intercept) 
+##   -1.283392
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{coef}\NormalTok{(log.modT)[}\DecValTok{1}\NormalTok{] }\SpecialCharTok{+} \FunctionTok{coef}\NormalTok{(log.modT)[}\DecValTok{3}\NormalTok{] }\CommentTok{\# Group c}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## (Intercept) 
+##  -0.3454749
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{means }\OtherTok{\textless{}{-}} \FunctionTok{tapply}\NormalTok{(mustard}\SpecialCharTok{$}\NormalTok{logheight, mustard}\SpecialCharTok{$}\NormalTok{treat.hab, mean)}
+\NormalTok{means}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##     Forest        Int        Sun 
+## -0.8687665 -1.2833924 -0.3454749
+\end{verbatim}
+
+We notice that our expected values are all negative. This doesn't make
+sense given that our dependent variable is dry plant height in
+centimeters. The negative values are a result of our log transformation
+which allowed us to meet our model's assumptions.
+
+For reporting our results, it is important to \emph{back-transform} our
+parameter estimates and CI's to the scale of our original data. We can
+do this easily by exponentiating \texttt{exp()} our expected values and
+CI's.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{CI[,}\DecValTok{1}\SpecialCharTok{:}\DecValTok{5}\NormalTok{] }\OtherTok{\textless{}{-}} \FunctionTok{exp}\NormalTok{(CI[,}\DecValTok{1}\SpecialCharTok{:}\DecValTok{5}\NormalTok{])}
+\NormalTok{CI}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##         fit   se.fit residual.scale     lower     upper      Habitat
+## 1 0.4194687 1.059375       1.696619 0.3746296 0.4696744       Forest
+## 2 0.2770957 1.128938       1.696619 0.2184722 0.3514499 Intermediate
+## 3 0.7078841 1.082957       1.696619 0.6055142 0.8275609        Sunny
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{means }\OtherTok{\textless{}{-}} \FunctionTok{tapply}\NormalTok{(mustard}\SpecialCharTok{$}\NormalTok{dryheight, mustard}\SpecialCharTok{$}\NormalTok{treat.hab, mean)}
+\NormalTok{means}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##    Forest       Int       Sun 
+## 0.4939881 0.3171579 0.7723182
+\end{verbatim}
+
+Finally, lets plot our back-transformed expected means and their 95\% CI
+to visualize differences in plant height among habitats on the scale of
+the original data. Because X is a factor, \texttt{plot()} will
+automatically use a numeric sequence when labeling the x-axis (e.g.~1,
+2, 3). In order to make the x-axis display our treatment habitats, we
+need to remove the x-axis label in \texttt{plot()} using the
+\texttt{xaxt\ =\ "n"} argument. We can use \texttt{axis()} toa dd a new
+axis with specific labels afterwards. We can also add error bars to the
+plot showing the 95\$ CIs. A simple way to do this is \texttt{errbar()}
+from the package \texttt{Hmisc}. Within \texttt{errbar()} we need to
+provide four numeric vectors specifying the x and y values and the upper
+and lower interval values.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{library}\NormalTok{(Hmisc)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Loading required package: lattice
+\end{verbatim}
+
+\begin{verbatim}
+## Loading required package: survival
+\end{verbatim}
+
+\begin{verbatim}
+## Loading required package: Formula
+\end{verbatim}
+
+\begin{verbatim}
+## Loading required package: ggplot2
+\end{verbatim}
+
+\begin{verbatim}
+## 
+## Attaching package: 'Hmisc'
+\end{verbatim}
+
+\begin{verbatim}
+## The following objects are masked from 'package:base':
+## 
+##     format.pval, units
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{par}\NormalTok{(}\AttributeTok{mfrow =} \FunctionTok{c}\NormalTok{(}\DecValTok{1}\NormalTok{,}\DecValTok{1}\NormalTok{))}
+
+\FunctionTok{plot}\NormalTok{(CI}\SpecialCharTok{$}\NormalTok{fit, }\AttributeTok{ylab =} \StringTok{\textquotesingle{}Dry Height (cm)\textquotesingle{}}\NormalTok{, }\AttributeTok{ylim =} \FunctionTok{c}\NormalTok{(}\DecValTok{0}\NormalTok{,}\DecValTok{1}\NormalTok{),}
+     \AttributeTok{xlab =} \StringTok{\textquotesingle{}Treatment habitat\textquotesingle{}}\NormalTok{, }\AttributeTok{xaxt =} \StringTok{\textquotesingle{}n\textquotesingle{}}\NormalTok{, }\AttributeTok{cex =} \DecValTok{1}\NormalTok{, }\AttributeTok{pch =} \DecValTok{15}\NormalTok{)}
+
+\FunctionTok{axis}\NormalTok{(}\AttributeTok{side =} \DecValTok{1}\NormalTok{, }\AttributeTok{at =} \DecValTok{1}\SpecialCharTok{:}\FunctionTok{nrow}\NormalTok{(CI), }\AttributeTok{labels =}\NormalTok{ CI}\SpecialCharTok{$}\NormalTok{Habitat, }\AttributeTok{las =} \DecValTok{1}\NormalTok{, }\AttributeTok{cex.axis =} \FloatTok{1.075}\NormalTok{) }\CommentTok{\# Labeling x axis}
+
+\FunctionTok{errbar}\NormalTok{(}\FunctionTok{seq}\NormalTok{(}\DecValTok{1}\NormalTok{,}\DecValTok{3}\NormalTok{), CI}\SpecialCharTok{$}\NormalTok{fit, CI}\SpecialCharTok{$}\NormalTok{upper, CI}\SpecialCharTok{$}\NormalTok{lower, }\AttributeTok{add =} \ConstantTok{TRUE}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Week-3---More-than-two-samples_files/figure-latex/plot back transformed-1.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Try GGPLOT}
+\NormalTok{m\_plot }\OtherTok{\textless{}{-}} \FunctionTok{ggplot}\NormalTok{(CI, }\FunctionTok{aes}\NormalTok{(Habitat, fit,}\AttributeTok{colour=}\NormalTok{Habitat,}
+\AttributeTok{fill =} \FunctionTok{factor}\NormalTok{(Habitat))) }\SpecialCharTok{+} \FunctionTok{geom\_bar}\NormalTok{(}\AttributeTok{stat=}\StringTok{"identity"}\NormalTok{,}
+\AttributeTok{show.legend=}\ConstantTok{FALSE}\NormalTok{)}
+
+\NormalTok{m\_plot}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Week-3---More-than-two-samples_files/figure-latex/plot back transformed-2.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{m\_plot2 }\OtherTok{\textless{}{-}}\NormalTok{ m\_plot }\SpecialCharTok{+} \FunctionTok{geom\_errorbar}\NormalTok{(}\AttributeTok{data =}\NormalTok{ CI, }\FunctionTok{aes}\NormalTok{(}\AttributeTok{ymin =}\NormalTok{lower, }\AttributeTok{ymax =}\NormalTok{upper), }\AttributeTok{linetype =} \DecValTok{1}\NormalTok{, }\AttributeTok{color =}\StringTok{"black"}\NormalTok{,}
+                                  \AttributeTok{alpha =} \DecValTok{1}\NormalTok{, }\AttributeTok{width =} \FloatTok{0.5}\NormalTok{, }\AttributeTok{show.legend =} \ConstantTok{FALSE}\NormalTok{) }\SpecialCharTok{+}
+\FunctionTok{xlab}\NormalTok{(}\StringTok{"Treatment Habitat"}\NormalTok{) }\SpecialCharTok{+} \FunctionTok{ylab}\NormalTok{(}\StringTok{"Dry Height (cm)"}\NormalTok{) }\SpecialCharTok{+} 
+  \FunctionTok{geom\_hline}\NormalTok{(}\AttributeTok{yintercept =} \DecValTok{0}\NormalTok{, }\AttributeTok{color =} \StringTok{"black"}\NormalTok{, }\AttributeTok{linetype =} \DecValTok{3}\NormalTok{)}
+
+\NormalTok{m\_plot2}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Week-3---More-than-two-samples_files/figure-latex/plot back transformed-3.pdf}
+
+\end{document}

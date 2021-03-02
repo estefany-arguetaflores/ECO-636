@@ -1,0 +1,228 @@
+---
+title: "EstefanyArgueta-Week3LabReport"
+author: "E"
+date: "2/19/2021"
+output:
+  pdf_document: default
+  html_document: default
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(tinytex.verbose = TRUE)
+setwd("~/Eco-636/Week 3")
+library(lattice)
+```
+
+## Take Home Exercise
+We will use a dataset studying population fluctuations of birds in an urban rural study system in OH. The project includes a spot map survey to measure bird territory density at 17 2ha sites from 2005-2010. 
+
+```{r}
+colrip <- read.csv(file ="Data/colrip.csv", header = TRUE)
+str(colrip)
+# Change year from integer to factor
+colrip$year <- as.factor(colrip$year)
+# Change spp to factor
+colrip$spp <- as.factor(colrip$spp)
+str(colrip)
+
+levels(colrip$year)
+levels(colrip$spp)
+# The references are going to 2005 and ACFL
+```
+
+Looking at the data, we have a continuous variable - the mean number of territories over all years for each species `n terr` and two factors, three migratory categories (`mig.stat`) and three species of birds (`spp`). 
+
+> We are interested in whether the number of territories at a site differs between our three species. 
+
+The three species are: Acadian flycatcher (ACFL), Northern cardinal (NOCA) and American Robin (AMRO). 
+
+We want to see if the populations of these birds differ in sites throughout the county. 
+
+Alternately, the differences might be explained by the regional climate differences between years (2005-2010). 
+
+Our *null* hypotheses are:
+
+* $H_0$: There are no differences in numbers of territories between species, or year
+* $H_{spp}$: The number of breeding territories at a site differs significantly between species
+* $H_{yr}$: The number of breeding territories at a site differ significantly between years
+
+> **Using the process we went thorugh in class: Formulate a statisical model for each hypothesis, fit the model, evaluate the fit of those models and interpret the model. **
+
+#### Before anything, lets start with data exploration. 
+Data Exploration
+```{r, fig.width=10}
+par(mfrow=c(1,3))
+boxplot(colrip$n.terr)
+boxplot(colrip$n.terr ~ colrip$spp)
+boxplot(colrip$n.terr ~ colrip$year)
+```
+
+```{r, fig.align='center'}
+par(mfrow=c(1,1))
+bwplot(colrip$n.terr ~ colrip$spp | colrip$year)
+```
+We can see potential outliers in the plots. Lets go ahead with our models and then check with CooksD
+
+
+> Formulate and fit a statistical model for each hypothesis
+
+**# of Territories between Spp or Year**
+
+```{r}
+mSppYear <- glm(n.terr ~ spp + year, data = colrip, family = "gaussian")
+coef(mSppYear)
+tapply(colrip$n.terr, list(colrip$spp, colrip$year), mean, na.rm = T)
+```
+
+**# of Territories between Spp**
+```{r}
+mSpp <- glm(n.terr ~ spp, data = colrip, family = "gaussian")
+coef(mSpp)
+tapply(colrip$n.terr, list(colrip$spp), mean, na.rm = T)
+```
+
+**# of Territories between years**
+```{r}
+mYr <- lm(n.terr ~ year, data = colrip)
+coef(mYr)
+tapply(colrip$n.terr, list(colrip$year), mean, na.rm = T)
+```
+
+
+> Evaluate the fit of these models. Do they fulfill the assumptions of a linear model? If not, what can we do about it?
+
+**# of Territories between Spp or Year**
+```{r plot sppyear, fig.width= 10, fig.height=10}
+par(mfrow = c(2,2))
+plot(mSppYear)
+```
+```{r}
+par(mfrow = c(1,1))
+cooksd <- cooks.distance(mSppYear)
+plot(cooksd)
+abline(h = 4*mean(cooksd, na.rm = T), col = "red")
+```
+
+**# of Territories between Spp**
+```{r plotspp, fig.width= 10, fig.height=10}
+par(mfrow = c(2,2))
+plot(mSpp)
+```
+```{r}
+par(mfrow = c(1,1))
+cooksd <- cooks.distance(mSpp)
+plot(cooksd)
+abline(h = 4*mean(cooksd, na.rm = T), col = "red")
+```
+
+**# of Territories between Years**
+```{r plot year, fig.width= 10, fig.height=10}
+par(mfrow = c(2,2))
+plot(mYr)
+```
+```{r}
+par(mfrow = c(1,1))
+cooksd <- cooks.distance(mYr)
+plot(cooksd)
+abline(h = 4*mean(cooksd, na.rm = T), col = "red")
+```
+
+By examining the fit of the three models, it is clear by the Q-Q plot that our data is not normally distributed.
+
+By examining the `Residuals vs Fitted` plots, we see that there is an increase in the spread of the residuals for the larger values of the fitted values. This indicates a violation of the homogeneity assumption
+
+We would also be able to look for violations by creating a histogram of the residuals and a conditional boxplot. 
+
+We can transform the data to look more normal. We will create a new column for the log transformed `n.terr`
+```{r}
+range(colrip$n.terr)
+# We see that there are zeros in our data. 
+#We will have to add 1 to our dataset in order for the transformation to work. 
+# Lets Log Transform
+colrip$logterr <- log(colrip$n.terr + 1)
+
+# Updating models
+log.MSppYear <- glm(logterr ~ spp + year, data = colrip, family = "gaussian")
+log.MSpp <- glm(logterr ~ spp, data = colrip, family = "gaussian")
+log.MYear <- glm(logterr ~ year, data = colrip, family = "gaussian")
+
+par(mfrow = c(2,2))
+
+plot(log.MSppYear)
+plot(log.MSpp)
+plot(log.MYear)
+
+```
+
+Now our data looks more normal and we can proceed with choosing the best model. 
+
+
+>Using model selection, with AIC, compare the three competing hypotheses and interpret the output, which model best explains the variation in your data?
+
+```{r}
+library(AICcmodavg)
+log.mod0 <- glm(logterr ~ 1, colrip, family = "gaussian")
+
+models <- list()
+models[[1]] <- log.mod0
+models[[2]] <- log.MSppYear
+models[[3]] <- log.MSpp
+models[[4]] <- log.MYear
+
+names(models) <- c("Null", "Species and Year", "Species", "Year")
+
+aictab(models)
+```
+
+We notice that the best model is `log.MSpp`. The lowest AIC score indicates the most parsimonious model. 
+
+
+>Is there a significant effect of species or year on number of breeding territories in this study system?
+
+Lets examine our models further
+
+```{r}
+summary(log.MSppYear)
+```
+The reference level is species ACFL in year 2005. The only significant values are between the different species. 
+```{r}
+summary(log.MSpp)
+```
+The reference level for this model is the ACFL species. There is a significant difference between the AMRO and NOCA species with the reference level. 
+```{r}
+summary(log.MYear)
+```
+The reference level for this model is the year 2005. There are no significant differences between years 2006-2010 and year 2005. 
+
+
+>Fully interpret your *best* model and "report" your findings. 
+
+Our best model was $H_{spp}$: The number of breeding territories at a site differs significantly between species. 
+
+Based on this output, we see that there are differences between the AMRO and NOCA species from the ACFL species. The two species are have a larger number of territories than the ACFL species. The differences are significant. 
+
+We also notice that the residual deviance is lower than our null deviance, indicating that we have a good global model. 
+
+```{r}
+aov.mSpp <- aov(log.MSpp)
+tuk.mSpp <- TukeyHSD(aov.mSpp)
+tuk.mSpp
+```
+By using the Tukey HSD pairwise comparisons, we see that there are significant differences all three species.
+
+
+>What about differences between species each year? That also seems like a reasonable hypothesis doesn't it. Do any of these models test that? 
+
+The `log.MSppYear` model tests the hypothesis between species each year. 
+
+If we wanted to explore this model further we can run a TUkey HSD pariwaise comparison:
+```{r}
+aov.mSppYear <- aov(log.MSppYear)
+tuk.mSppYear <- TukeyHSD(aov.mSppYear)
+tuk.mSppYear
+```
+We notice there are no differences between years. There is a significant difference between species. 
+
