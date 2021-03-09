@@ -1,0 +1,284 @@
+---
+title: "Week 5"
+author: "E"
+date: "3/8/2021"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+setwd("~/Eco-636/Week 5")
+```
+
+```{r packages, message = FALSE, warning=FALSE}
+library(HH)
+library(ggplot2)
+```
+
+## Linear Regression and One Way ANOVA
+
+The purpose of the lab is to review how to interpret a two-way ANOVA and increase familitarity with applying a simple linear regression to examine relationships between a single **continuous** response variable (y) and a singe **continuous** explanatory variable (x). 
+
+First we are working with a simple linear regression comparing the *continuous* model with what we've seen in *categorical* predictors. 
+
+The simple linear regression has a single explanatory variable (*X*) and *X* is now continuous and the focus is on quantifying hte *relationship* between *y* and *X* rather than estimating differences among expected group means. 
+
+The model takes form in $$y_i = beta_0 + beta_1X_{1i} + e+i$$ 
+
+<mark style="background-color: seashell">*Review*: In the ANOVA model, $beta_0$ is the expected mean of the referene level and $beta_1$ is the contract between expected means of different groups. </mark> 
+
+In our example:
+
+  * $beta_0$ is the intercept - the value of *y* when *X* is 0
+  
+  * $beta_1$ is the slope - the change in value of *y* with a one-unit increase in *X*. 
+
+The null hypothesis of both linear regressions and ANOVA is that there is no effect of *X* on *y*. When fitting a simple linear regression, we are asking how the expected value of *y* changes as a **linear** function of X. The simplest null hypothesis is that the expected value of *y* remains constant across all values of *X* (i.e. no change, $beta_1$ = 0.) In this scenario, there is no effect of *X* ($beta_1 = 0$) and so *X* drops out of the model and we are left with an intercept-only model where $beta_0$ is the mean of *y*. 
+
+### Worked Example
+Data comes from a radio telemetry study of prairie rattlesnakes in the northwestern Rocky Mountains. The primary goal of the study was to describe prairie rattlesnake movement patterns in a mountainous landscape but the researchers also looked at how movement metrics were influenced by body size. 
+
+We will use a simple linear regression to examine the relationship between movement rate (distance moved per unit time) and body weight. 
+
+$$Rate_i = beta_0 + beta_{weight}Weighti + e_i$$ 
+
+What are the null and alternative hypothesis for this analysis?
+
+* $H_0$: There is no relationship between movement rate and body weight
+    * Response: Movement Rate
+    * Explanatory: Body weight
+    * $beta_{weight} = 0 
+
+* $H_a$: There is a relationship between movement rate and body weight is different from zero
+    * $beta_{weight}$ != 0,
+
+```{r prar load}
+rattlers <- read.table(file = "Data/rattlesnake.rate.txt", header = TRUE)
+head(rattlers)
+str(rattlers)
+```
+The data consists of three columns:
+
+* Rate: The movement rate specified as meters moved per day
+
+* Weight: snake body weight in grams
+
+* Sex
+
+We can look at the data in more details usinging `summary()` and tabulate male and female observations using `table()`
+```{r rat sum}
+summary(rattlers)
+table(rattlers$Sex)
+```
+Our sample size is 27 and 21 of those observations are males. Because mechanisms for size-specific differences in movement may vary by sex (e.g. due to sex-specific difference in mate searching), lets remove the females from the data to avoid any confounding effects of sex. 
+```{r fem remove}
+rattlers <- subset(rattlers, rattlers$Sex == "M", c('rate','weight', 'Sex'))
+table(rattlers$Sex)
+summary(rattlers)
+```
+
+### Lets go through data exploration 
+The predictor variable is continuous so we will explore data a bit differently using *histograms* and *boxplots* of both rate and weight to examine the distribution f each variable. 
+
+```{r explor single}
+par(mfrow=c(2,2))
+#Histogram of rate
+hist(rattlers$rate, breaks = seq(0,150,5), cex.axis = 0.8,
+     xlab = "Movement rate (m/day)", main = "")
+#Boxplot of rate 
+boxplot(rattlers$rate, cex.axis = 0.8,
+        ylab = "Movement rate (m/day)", main = "")
+# Histogram of weight
+hist(rattlers$weight, breaks = seq(0,600,20),
+     cex.axis = 0.8, xlab = "Body Weight (g)", main = "")
+
+#Boxplot of weight
+boxplot(rattlers$weight, cex.axis = 0.8,
+        ylab = "Body weight (g)", main = "")
+```
+These graphs communicate informaiton about each variable's distribution independently, but we really want to visualize the relationship *between* these variable to visualize a **linear** relationship between ovement and body weight. 
+
+We can do this by using `scatter.smooth()` to create a scatter plot of rate and weight. We can add a trend line to the plot using `abline()` and a fittle `glm()` object with `guassian`distribution. NOTE: We are not fitting the model at this time. We just want to see if there is a linear relationship between movement rate and body weight through data exploration. 
+
+```{r scatsmo}
+#Scatterplot 
+par(mfrow = c(1,1))
+grn <- adjustcolor("forestgreen", 0.6)
+scatter.smooth(rattlers$weight, rattlers$rate,
+               ylim=c(0,125), xlim=c(150, 500),
+               ylab = "Movement rate (m/day)",
+               xlab = "Body weight (g)", pch = 21,
+               bg=grn)
+abline(glm(rate~weight, data=rattlers, family=gaussian), lwd = 2, col = 4)
+```
+
+```{r explore}
+mod1 <- glm(rate~weight,data=rattlers, family = "gaussian")
+par(mfrow=c(2,3))
+plot(mod1, pch = 16)
+hist(resid(mod1), breaks = seq(-60, 60, 5), main = "", xlab = "Residuals")
+plot(resid(mod1)~rattlers$weight, pch = 16, ylab = "Residuals", xlab = "Body weight (g)")
+```
+*Remember* plots of the residuals should not show a clear pattern or structure but rather spread randomly distributed around 0. 
+
+There appears to be a *bit* more residual variation at the intermediate-upper body weights although this may be caused by only a single point. 
+
+Lets use a log-transformation for our data to re-evaluate the fit. 
+```{r log}
+rattlers$lograte <- log(rattlers$rate)
+log.mod <- glm(lograte~weight, data = rattlers, family = "gaussian")
+par(mfrow=c(2,3))
+plot(log.mod,pch=16)
+hist(resid(log.mod),breaks=seq(-2,2,0.1),main="",xlab="Residuals")
+plot(resid(log.mod)~rattlers$weight,pch=16,
+ylab="Residuals",xlab="Body weight (g)")
+```
+
+The Q-Q plot indicates that the residuals are normally distributed. The residuals also have less evidence of structure or pattern. Since the model's assumptions appear met, we can proceed with statistical inference. 
+
+Lets replot the scatter plot
+```{r log scat}
+par(mfrow=c(1,1))
+plot(lograte~weight, rattlers, pch=16,col = grn, ylim=c(2,5), xlim=c(150,500))
+abline(log.mod,lwd=2,lty=2)
+
+summary(log.mod)
+```
+Lets break down the summary table. 
+
+The intercept estimate is the value for movement rate when weight = 0. 
+The weight estimate is the change in y for every unit of X. 
+
+Based on that, do we reject the Null?
+Well the p-value is <0/05 and the beta for weight is positive so we can conclude that there is a significant positive relationship between log(movement rate) and body weight.
+
+With the `lm()` funciton, we can use the R2 and an estimate of sigma as the residual standard error to test how much our model explains variance. With `glm()`, we use a measure of deviance. 
+
+<mark style="background-color: seashell">*Remember* The `Null Deviance` refers to how well the response is predicted with nothing but an `intercept` and the `Residual deviance` shows how well the response is predicted by the model with all explanatory variables included. </mark>
+A smaller deviance represents a better fit.  
+
+For a linear regressio (what we have), the `Residual Deviance` is equal to the residual sum of squares. For us, it is good to see that the `residual deviance` is less than the `Null deviance` but the small differnce indicates the null model might explain most of our variation in the data (and there is not much gain in using our weight explanatory variable). We want to approximate R2 for `glm()` models, we can use the following equation. 
+$$R^2_{approx} = 1- (Residual deviance / Null Deviance)$$
+
+```{r r2}
+1-(3.2914/4.4001)
+```
+
+If we compute the R2, we find that only ~24% of the vriation in log(movement rate) is explained by body weight. 
+
+Lets continue to interpret the output of the model. 
+The intercept is the valueof *y* when *X*=0, so that log(movement rate) for a snake with a body weight of zero grams is approximately 3.05 (or approximately 21 meters/day). We can demonstrate this by re-plotting the data adding an `abline()` and then adding a vertical line to represent X=0 and a horizontal line to represent the value of $beta_0$.  We can demonstrate this using the `predict()` to predict the expected log(movement rate)f or a snake with weight = 0. 
+
+```{r log plot}
+plot(lograte~weight, rattlers,pch = 16, col = grn, ylim=c(2,5), xlim = c(-100,500))
+abline(log.mod, lwd = 2, lty=2) #linear model
+abline(v=0, col = "red") # X = 0
+abline(h=coef(log.mod)[1]) # intercept
+```
+
+Lets work through the prediction of this model and its confidence interval in R using two new packages `HH` and `ggplot2`
+
+```{r HH and ggplot}
+# First lets set up a new data frame for predictor
+weight_new <- seq(from = min(rattlers$weight),
+                  to = max(rattlers$weight),
+                  length = 100)
+df_preds <- data.frame(weight = weight_new)
+
+# Now we predict using the HH package
+pred.1 <- predict(log.mod, newdata = df_preds, se.fit = TRUE)
+pred.2 <- interval(log.mod, pred.1)
+pred.int <- data.frame(df_preds, pred.2)
+head(pred.int) # Looks like for every weight, we get CI low and high and Predict low and high # COOL
+
+# Now lets plot using ggplot
+ggplot(pred.int, aes(x = weight, y = fit)) + 
+  geom_line()+
+  geom_line(aes(x=weight, y = ci.low, color=2))+
+  geom_line(aes(x=weight, y = ci.hi, color =2)) +
+  theme_minimal() + ylab("Log Movement Rate")+ #minimal takes away dark grey background
+  xlab("Weight")+
+  theme(panel.border = element_rect(colour = "black", fill = NA))
+```
+
+We cannot have a snake with 0 body weight which makes our intercept of no practical use. We can use a method called centering - subtract each value from its mean. This allows the mean of the centered variable to equal zero and then $beta_0$ will be tnterpreted as the expected value of *y* at the mean of the *centered* variable. 
+
+In our example, if we re-fit the model using the centered body weight, $beta_0$ will then equal the expected value of log(movement rate) at the mean of `weight`. Lets try this. 
+```{r}
+rattlers$weightC <- rattlers$weight-mean(rattlers$weight)
+round(mean(rattlers$weightC),2)
+
+log.modC <- glm(lograte ~ weightC, data = rattlers, family = "gaussian")
+summary(log.modC)
+mean(rattlers$lograte)
+
+plot(lograte ~ weightC, rattlers, pch = 16, col = grn, ylim = c(2,5), xlim = c(-200,200))
+abline(log.modC, lwd=2)
+abline(v=0, col = "red")
+abline(h=coef(log.modC)[1])
+
+exp(coef(log.modC)[1]) # back-transformed to original scale
+mean(rattlers$rate) # Compare with the observed mean
+```
+
+How do we interpret $beta_{weight}$? Well remember that the beta for the slope is the change in expected value of *y* per unit change in *X*. So log(movement rate) increases by approximately 0.0024 for every one gram increase in body weight. Using the centered body weight, we know that the expected log(movement rate) for a snake with the average body weight (333 g) is approximately 3.83. So lets calculate the expected log(movement rate) for a snake with a **one unit** increase in body weight (i.e. 334 g)
+```{r}
+# b0 + 1*b1
+coef(log.modC)[1] + coef(log.modC)[2]
+```
+There is such a small change in log(movement rate) over a one-unit change in body weight that it is barely perceptibly different from the log(movement rate) for a snake with average body weight. 
+
+If we wanted to know what the expected movement rate is for every one unit change in body weight is in meters, we must back-transform the data. 
+```{r}
+#b0 + 1*b1
+exp(coef(log.modC)[1] + coef(log.modC)[2])
+```
+
+The alternate approach is to look at how movement rates change with body weight when one unit changes are small is to multiple $beta_{weight}$ by some large value. 
+
+For example, we may wish to know how the expected log(movement rate) changes with a **100** g increase in body weight. To calculate this change, we would simply multiply $beta_{weight}$ by 100 and add it to the $beta_0$. 
+```{r}
+#bo + 100*bi
+coef(log.modC)[1] + (100*coef(log.modC)[2])
+exp(coef(log.modC)[1] + (100*coef(log.modC)[2]))
+```
+Increasing body weight by 100 g corresponds to a movement rate of 58 meters/day, which is approx. 12 meters further than the expected 
+
+
+####Lets now plot the expected values
+First lets create a data frame with the values of body weight that will be used to predict log(movement rate). We can back transform this predicted values later. Remember that this data frame must have the same column names as the data used to fit the original model. We can create the data frame with a single column (weight) containing a sequence of body weight values spanning the entire range of the observed data for body weight. 
+Lets use `predict()` and `interval()` to get predicted values of the mean and corresponding confidence and prediction intervals, respectively. 
+
+Then lets use the `exp()` to back-transform the predicted values onto the original scale of movement rate (meters/day). We can add these predicted values and their appropriate intervals to a scatter plot of movement rate and body weight using `polygon()`. 
+```{r backtransform}
+# Plotting expected values, CI and PI
+# Set up new data frame for predictors
+weight_new <- seq(from = min(rattlers$weight),
+                  to = max(rattlers$weight),
+                  length = nrow(rattlers))
+df_preds <- data.frame(weight = weight_new)
+
+# Now we predict
+pred.1 <- predict(log.mod, newdata = df_preds, se.fit = TRUE)
+pred.2 <- interval(log.mod, pred.1)
+pred.int <- data.frame(df_preds, pred.2)
+
+# Now lets plot
+# This time we are adding prediciton intervals
+ggplot(pred.int, aes(x = weight, y = rattlers$lograte))+
+  geom_point(aes(alpha = 0.5)) +
+  geom_line(aes(x=weight, y = fit))+
+  geom_line(aes(x=weight, y=ci.low, color = 5)) + 
+  geom_line(aes(x=weight,y=ci.low,color=5))+
+  geom_line(aes(x=weight,y=ci.hi,color=5))+
+  geom_line(aes(x=weight,y=pi.low,color=3))+
+  geom_line(aes(x=weight,y=pi.hi,color=3))+
+  theme_minimal()+ylab("Log Movement Rate")+xlab("Weight")+
+  theme(panel.border = element_rect(colour = "black",fill=NA),
+  legend.position = "none")
+```
+
+The prediction intervals are larger than the confidence intervals because the confidence intervals represent uncertainty in the expected values (the mean value of *y* at a given value of *X*). We expect 95% confidence interval to contain the true expected values of movement rate 95% of the time. This is analogous to the standard error or CI for the mean. 
+The prediction interval represents the uncertainty in estimating the expected values and random error about that expected value. So we would 95% sure that a future observation would lie within the prediction interval. 
