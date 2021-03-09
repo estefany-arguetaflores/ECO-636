@@ -8,10 +8,14 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-library(ggplot2)
 knitr::opts_chunk$set(echo = TRUE)
+setwd("~/Eco-636/Week 2")
 ```
 
+```{r packages, message = FALSE, warning=FALSE}
+#Load Requried Packages
+library(ggplot2)
+```
 # Simulate the data!
 
 Here I simulate the two tree stands with different DBHs.  First, we simulate the means of the two stands (mu.dbh), and assign stands A or B.  Then we give each observation a unique value using a random number from a normal distribution (rnorm) around the given mean value.

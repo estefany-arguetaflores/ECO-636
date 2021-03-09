@@ -13,6 +13,9 @@ editor_options:
 knitr::opts_chunk$set(echo = TRUE)
 options(tinytex.verbose = TRUE)
 setwd("~/Eco-636/Week 3")
+```
+
+```{r packages, message = FALSE, warning=FALSE}
 library(lattice)
 ```
 

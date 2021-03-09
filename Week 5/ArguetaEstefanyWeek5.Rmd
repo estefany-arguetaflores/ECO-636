@@ -1,0 +1,203 @@
+---
+title: "Week 5 Lab Report"
+author: "E"
+date: "3/8/2021"
+output: pdf_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+setwd("~/Eco-636/Week 5")
+library(lattice)
+library(AICcmodavg)
+library(ggplot2)
+library(dplyr)
+```
+
+## Interacting with Migrants
+
+> Goal: Recommend habitat purchases of either anthro or natural sites for migrant birds. 
+
+Write a brief summary describing findings and recommendations describing your findings and recommendations (no more than 2 pages of single spaced writing, not including code or figures). Summary should include your process and results, including 1-2 supporting figures for model interpretation/prediction, and 1-2 figures for evaluating model assumptions. 
+
+## Summary
+Upon review of the data available, we suggest that purchase should be for natural sites to attract migratory birds. To achieve this result, we conducted a two way analysis answering the question, *is there a significant difference in number of birds based on the type of bird (migratory or resident) and type of site (anthro influenced or natural sites)*? We followed the modeling process (detailed below in notes). After evaluating models, the best model was the full model, which included the influence of both site and bird type. We achieved this through AIC model selection.
+We then evaluated the model to meet the assumptions for an ANOVA model. 
+
+These figures below represent the validation of assumptions for the model. In the `Residuals vs Fitted` plot, we see slight variation in residuals. Our `Q-Q plot` shows that our data is normally distributed. Based on these figures, we can move forward with saying our data meets our model's assumptions
+```{r echo=FALSE, results='hide'}
+migrants <- read.csv(file = "Data/migrants.csv", header = TRUE)
+mSiteMig <- lm(n.obs~ urb.cat + migstat, data = migrants)
+```
+
+```{r echo = FALSE}
+par(mfrow=c(2,2))
+plot(mSiteMig)
+```
+
+To answer our question regarding which plot to purchase we can look at our model outputs. 
+The coefficients output of the model is as follows: 
+```{r echo = FALSE}
+coef(mSiteMig)
+```
+The intercept represents our reference group, migratory at anthro sites. The group labeled `urb.catnatural` represents the difference between migratory birds at natural sites and anthro sites. The coefficient labeled `migstatresi` is difference of resident birds from migratory birds at anthro sites
+
+Below is a graph that help decide our results
+```{r echo = FALSE}
+par(mfrow=c(1,1))
+boxplot(migrants$n.obs ~ migrants$urb.cat)
+```
+When examining difference between anthro and natural sites, we can be see that anthro sites have large bird observations. However, when we consider our model and look within those observations, we see that the bird makeup within those sites vary. 
+```{r echo = FALSE}
+plotdata <- migrants %>% 
+  group_by(urb.cat, migstat) %>% 
+  summarize(n = n(),
+            mean = mean(n.obs),
+            sd = sd(n.obs),
+            se = sd/sqrt(n),
+            ci = qt(0.975, df = n-1 * sd/ sqrt(n)))
+
+par(mfrow=c(1,1))            
+ggplot(plotdata, 
+       aes(x = urb.cat, 
+           y = mean,
+       group= migstat, 
+       color = migstat))+
+  geom_point(size = 5) +
+  geom_line(size =1) + 
+  ggtitle("Number of Birds per site") +
+  xlab("Site") + ylab("Bird Observations")
+```
+
+With the goal of providing habitat for as many migrants birds as possible, we suggest investing in natural sites. We notice a slight increase in the presence of birds in natural sites however, our model does not conclude that it was a significant difference (p-value = 0.179). 
+
+
+
+
+---- 
+
+### WorkSpace
+
+```{r load data}
+migrants <- read.csv(file = "Data/migrants.csv", header = TRUE)
+str(migrants)
+head(migrants)
+
+# We notice our data has both migrant and resident birds
+table(migrants$migstat)
+summary(migrants)
+```
+
+### STEPS
+> Develop a set of hypotheses (null and alternative) based on project goals
+
+1. State the question
+    * Is there a significant difference in number of  birds among antho and natural sites between migrant and resident birds?
+    * Response:
+        * Number of birds observed
+    * Explanatory:
+        * sites - `anthro` or `nat`
+        * migstat - `mig` or `resi`
+2. Data Exploration
+```{r data explr}
+boxplot(migrants$n.obs, ylab = "Migrants")
+boxplot(migrants$n.obs ~ migrants$urb.cat)
+bwplot(migrants$n.obs ~ migrants$urb.cat|migrants$migstat)
+tapply(migrants$n.obs, migrants$urb.cat, mean) 
+tapply(migrants$n.obs, migrants$migstat, mean)# Raw means
+```
+Looks like there may be a difference between migratory and resident birds. 
+
+> Describe all relevant statisical model(s) in words and algebra
+
+3. Describe the model:
+    
+    *In words:
+        * Is there a difference between the habitat means of migrants observed between migrants and residents?
+        * $H_0$: There is no difference
+    * In Mathematical form
+        * $y_i = beta_0 + beta_{1(g)}Site_{1i(g)} + beta_{2(g)}Migstat+{2i(g)} + e_i$
+        * $y_i$ is number of birds observed
+    * Model assumptions are:
+        * Residuals are normally distributed
+        * Contant variance (homogeneity)
+        * Observations are independent
+        * Predictors measured without error (fixed X)
+
+> Fit candidate models and evaluate using AIC to select best candidate model
+
+4. Fit the model
+```{r null model}
+mSiteMig <- lm(n.obs ~ migstat + urb.cat, data = migrants)
+summary(mSiteMig)
+coef(mSiteMig)
+
+tapply(migrants$n.obs, list(migrants$migstat, migrants$urb.cat), mean, na.rm = T)
+```
+Here are our coefficients along with the computed means for each group. 
+
+Our first estimate of the intercept is the estimate of the mean number of birds observed for migrants at the anthro site. The difference between 
+> Evaluate and validate the top model(s)
+
+5. Evaluate the model - Model validation and model selection
+```{r}
+par(mfrow = c(2,2))
+plot(mSiteMig)
+```
+The results look to meet our assumptions.
+
+```{r eval models}
+# Model Selection
+#Full Model
+#Site only
+# Migratory status only
+# Null model
+
+modlist <- list()
+modlist[["mSiteMig"]] <- lm(n.obs ~ migstat + urb.cat, data = migrants)
+modlist[["mSite"]] <- lm(n.obs ~ urb.cat, data = migrants)
+modlist[["mMig"]] <- lm(n.obs ~ migstat, data = migrants)
+modlist[["mNull"]] <- lm(n.obs ~ 1, data = migrants)
+# AIC
+aictab(modlist)
+```
+Hmmm... We see that our null best describes our model but we can't get much info from that. All four models fall between 2 deltaAICs. Lets keep the full model to interpret our data
+
+> Interpret results, including description of all model parameters and what estimates mean including graphical and verbal summaries of the model predictions
+
+6. Interpret Results
+```{r}
+
+mSiteMig <- lm(n.obs~ urb.cat + migstat, data = migrants)
+summary(mSiteMig)
+coef(mSiteMig)
+
+tapply(migrants$n.obs, list(migrants$migstat, migrants$urb.cat), mean, na.rm = T)
+
+plotdata <- migrants %>% 
+  group_by(urb.cat, migstat) %>% 
+  summarize(n = n(),
+            mean = mean(n.obs),
+            sd = sd(n.obs),
+            se = sd/sqrt(n),
+            ci = qt(0.975, df = n-1 * sd/ sqrt(n)))
+
+par(mfrow=c(1,1))            
+ggplot(plotdata, 
+       aes(x = urb.cat, 
+           y = mean,
+       group= migstat, 
+       color = migstat))+
+  geom_point(size = 5) +
+  geom_line(size =1)
+  
+```
+Lets explain the output
+
+  * intercept = migratory at anthro sites
+  * urb.catnatural = difference between migratory at natural sites of anthro sites
+  * migstatresi =  difference of residents from migratory at anthro sites
+
+> Include an annotated R script or do this as an R Markdowon file

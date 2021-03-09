@@ -15,7 +15,7 @@ setwd("~/Eco-636/Week 3")
 ```
 
 ## ANOVA Background
-General Linear Model with a continuous response variable, *y*, and a singel categorical explanatory variable with *g* groups or levels
+General Linear Model with a continuous response variable, *y*, and a single categorical explanatory variable with *g* groups or levels
 In mathematical form:
 
 $$ y_{i} = \beta_0 + \beta_{1(g)}X_{i(g)} + e_i$$
